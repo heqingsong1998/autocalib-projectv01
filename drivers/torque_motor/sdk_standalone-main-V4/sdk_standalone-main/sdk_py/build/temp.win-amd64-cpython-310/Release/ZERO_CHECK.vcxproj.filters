@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_py\build\temp.win-amd64-cpython-310\Release\CMakeFiles\b5a81cc3e89905f15c0200b431ce870c\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7FE6E2E6-9C87-38D2-9CEE-BF7B70D9A574}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

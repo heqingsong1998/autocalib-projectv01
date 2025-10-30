@@ -1,0 +1,4 @@
+C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/motormaster.dir
+C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/ALL_BUILD.dir
+C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/ZERO_CHECK.dir
+C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/pybind11/CMakeFiles/ALL_BUILD.dir

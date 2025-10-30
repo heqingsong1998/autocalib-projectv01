@@ -1,0 +1,7 @@
+setup.cfg
+setup.py
+motormaster.egg-info/PKG-INFO
+motormaster.egg-info/SOURCES.txt
+motormaster.egg-info/dependency_links.txt
+motormaster.egg-info/not-zip-safe
+motormaster.egg-info/top_level.txt

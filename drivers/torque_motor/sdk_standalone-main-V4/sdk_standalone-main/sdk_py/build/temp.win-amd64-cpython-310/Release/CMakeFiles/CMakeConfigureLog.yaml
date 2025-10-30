@@ -1,0 +1,412 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt"
+    message: |
+      The system is: Windows - 10.0.26100 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Microsoft (R) 生成引擎版本 14.0.25420.1
+      版权所有(C) Microsoft Corporation。保留所有权利。
+      
+      生成启动时间为 2025/9/21 10:49:20。
+      节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdC\\CompilerIdC.vcxproj”(默认目标)。
+      PrepareForBuild:
+        正在创建目录“Debug\\”。
+        正在创建目录“Debug\\CompilerIdC.tlog\\”。
+      InitializeBuildStatus:
+        正在创建“Debug\\CompilerIdC.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /nologo /W0 /WX- /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc140.pdb" /Gd /TC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdC\\.\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\cl.exe
+      FinalizeBuildStatus:
+        正在删除文件“Debug\\CompilerIdC.tlog\\unsuccessfulbuild”。
+        正在对“Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate”执行 Touch 任务。
+      已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdC\\CompilerIdC.vcxproj”(默认目标)的操作。
+      
+      已成功生成。
+          0 个警告
+          0 个错误
+      
+      已用时间 00:00:00.51
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/3.31.8/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Microsoft (R) 生成引擎版本 14.0.25420.1
+      版权所有(C) Microsoft Corporation。保留所有权利。
+      
+      生成启动时间为 2025/9/21 10:49:21。
+      节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdCXX\\CompilerIdCXX.vcxproj”(默认目标)。
+      PrepareForBuild:
+        正在创建目录“Debug\\”。
+        正在创建目录“Debug\\CompilerIdCXX.tlog\\”。
+      InitializeBuildStatus:
+        正在创建“Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /nologo /W0 /WX- /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc140.pdb" /Gd /TP /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdCXX\\.\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\cl.exe
+      FinalizeBuildStatus:
+        正在删除文件“Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild”。
+        正在对“Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate”执行 Touch 任务。
+      已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\3.31.8\\CompilerIdCXX\\CompilerIdCXX.vcxproj”(默认目标)的操作。
+      
+      已成功生成。
+          0 个警告
+          0 个错误
+      
+      已用时间 00:00:00.53
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/3.31.8/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud"
+      binary: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud'
+        
+        Run Build Command(s): "C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" cmTC_db013.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=14.0 /v:n
+        Microsoft (R) 生成引擎版本 14.0.25420.1
+        版权所有(C) Microsoft Corporation。保留所有权利。
+        
+        生成启动时间为 2025/9/21 10:49:22。
+        节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-e3kcud\\cmTC_db013.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_db013.dir\\Debug\\”。
+          正在创建目录“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-e3kcud\\Debug\\”。
+          正在创建目录“cmTC_db013.dir\\Debug\\cmTC_db013.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_db013.dir\\Debug\\cmTC_db013.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_db013.dir\\Debug\\\\" /Fd"cmTC_db013.dir\\Debug\\vc140.pdb" /Gd /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCCompilerABI.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24210 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          
+          CMakeCCompilerABI.c
+          cl /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_db013.dir\\Debug\\\\" /Fd"cmTC_db013.dir\\Debug\\vc140.pdb" /Gd /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCCompilerABI.c"
+          
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-e3kcud\\Debug\\cmTC_db013.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud/Debug/cmTC_db013.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud/Debug/cmTC_db013.lib" /MACHINE:X64  /machine:x64 cmTC_db013.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_db013.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-e3kcud\\Debug\\cmTC_db013.exe
+          cmTC_db013.vcxproj -> C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-e3kcud/Debug/cmTC_db013.pdb (Full PDB)
+        FinalizeBuildStatus:
+          正在删除文件“cmTC_db013.dir\\Debug\\cmTC_db013.tlog\\unsuccessfulbuild”。
+          正在对“cmTC_db013.dir\\Debug\\cmTC_db013.tlog\\cmTC_db013.lastbuildstate”执行 Touch 任务。
+        已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-e3kcud\\cmTC_db013.vcxproj”(默认目标)的操作。
+        
+        已成功生成。
+            0 个警告
+            0 个错误
+        
+        已用时间 00:00:00.78
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'C': C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/x86_amd64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the C compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/x86_amd64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.00.24210.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y"
+      binary: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y'
+        
+        Run Build Command(s): "C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" cmTC_86f0b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=14.0 /v:n
+        Microsoft (R) 生成引擎版本 14.0.25420.1
+        版权所有(C) Microsoft Corporation。保留所有权利。
+        
+        生成启动时间为 2025/9/21 10:49:23。
+        节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-haa05y\\cmTC_86f0b.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_86f0b.dir\\Debug\\”。
+          正在创建目录“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-haa05y\\Debug\\”。
+          正在创建目录“cmTC_86f0b.dir\\Debug\\cmTC_86f0b.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_86f0b.dir\\Debug\\cmTC_86f0b.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_86f0b.dir\\Debug\\\\" /Fd"cmTC_86f0b.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24210 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          
+          CMakeCXXCompilerABI.cpp
+          cl /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_86f0b.dir\\Debug\\\\" /Fd"cmTC_86f0b.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-haa05y\\Debug\\cmTC_86f0b.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y/Debug/cmTC_86f0b.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y/Debug/cmTC_86f0b.lib" /MACHINE:X64  /machine:x64 cmTC_86f0b.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_86f0b.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-haa05y\\Debug\\cmTC_86f0b.exe
+          cmTC_86f0b.vcxproj -> C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-haa05y/Debug/cmTC_86f0b.pdb (Full PDB)
+        FinalizeBuildStatus:
+          正在删除文件“cmTC_86f0b.dir\\Debug\\cmTC_86f0b.tlog\\unsuccessfulbuild”。
+          正在对“cmTC_86f0b.dir\\Debug\\cmTC_86f0b.tlog\\cmTC_86f0b.lastbuildstate”执行 Touch 任务。
+        已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-haa05y\\cmTC_86f0b.vcxproj”(默认目标)的操作。
+        
+        已成功生成。
+            0 个警告
+            0 个错误
+        
+        已用时间 00:00:00.55
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/x86_amd64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the CXX compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/x86_amd64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.00.24210.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/FeatureTesting.cmake:34 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Compiler/MSVC-CXX.cmake:93 (_record_compiler_features)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerSupport.cmake:70 (cmake_record_cxx_compile_features)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:83 (CMAKE_DETERMINE_COMPILER_SUPPORT)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compile features"
+    directories:
+      source: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0"
+      binary: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+    buildResult:
+      variable: "CMAKE_CXX_FEATURE_TEST"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0'
+        
+        Run Build Command(s): "C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" cmTC_cef1e.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=14.0 /v:n
+        Microsoft (R) 生成引擎版本 14.0.25420.1
+        版权所有(C) Microsoft Corporation。保留所有权利。
+        
+        生成启动时间为 2025/9/21 10:49:24。
+        节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\cmTC_cef1e.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_cef1e.dir\\Debug\\”。
+          正在创建目录“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\Debug\\”。
+          正在创建目录“cmTC_cef1e.dir\\Debug\\cmTC_cef1e.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_cef1e.dir\\Debug\\cmTC_cef1e.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_cef1e.dir\\Debug\\\\" /Fd"cmTC_cef1e.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\feature_tests.cxx"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24210 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          
+          feature_tests.cxx
+          cl /c /Zi /W3 /WX- /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_cef1e.dir\\Debug\\\\" /Fd"cmTC_cef1e.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\feature_tests.cxx"
+          
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\Debug\\cmTC_cef1e.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0/Debug/cmTC_cef1e.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0/Debug/cmTC_cef1e.lib" /MACHINE:X64  /machine:x64 cmTC_cef1e.dir\\Debug\\feature_tests.obj
+          cmTC_cef1e.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\Debug\\cmTC_cef1e.exe
+          cmTC_cef1e.vcxproj -> C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-8hmuz0/Debug/cmTC_cef1e.pdb (Full PDB)
+        FinalizeBuildStatus:
+          正在删除文件“cmTC_cef1e.dir\\Debug\\cmTC_cef1e.tlog\\unsuccessfulbuild”。
+          正在对“cmTC_cef1e.dir\\Debug\\cmTC_cef1e.tlog\\cmTC_cef1e.lastbuildstate”执行 Touch 任务。
+        已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-8hmuz0\\cmTC_cef1e.vcxproj”(默认目标)的操作。
+        
+        已成功生成。
+            0 个警告
+            0 个错误
+        
+        已用时间 00:00:00.56
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CheckCXXCompilerFlag.cmake:55 (cmake_check_compiler_flag)"
+      - "pybind11/tools/pybind11Common.cmake:289 (check_cxx_compiler_flag)"
+      - "pybind11/tools/pybind11Common.cmake:330 (_pybind11_return_if_cxx_and_linker_flags_work)"
+      - "pybind11/tools/pybind11Common.cmake:374 (_pybind11_generate_lto)"
+      - "pybind11/CMakeLists.txt:171 (include)"
+    checks:
+      - "Performing Test HAS_MSVC_GL_LTCG"
+    directories:
+      source: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg"
+      binary: "C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/MDd /Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "HAS_MSVC_GL_LTCG"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg'
+        
+        Run Build Command(s): "C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" cmTC_8874a.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=14.0 /v:n
+        Microsoft (R) 生成引擎版本 14.0.25420.1
+        版权所有(C) Microsoft Corporation。保留所有权利。
+        
+        生成启动时间为 2025/9/21 10:49:26。
+        节点 1 上的项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\cmTC_8874a.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_8874a.dir\\Debug\\”。
+          正在创建目录“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\Debug\\”。
+          正在创建目录“cmTC_8874a.dir\\Debug\\cmTC_8874a.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_8874a.dir\\Debug\\cmTC_8874a.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /GL /D _MBCS /D WIN32 /D _WINDOWS /D HAS_MSVC_GL_LTCG /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_8874a.dir\\Debug\\\\" /Fd"cmTC_8874a.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\src.cxx"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24210 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          
+          src.cxx
+          cl /c /Zi /W3 /WX- /Od /Ob0 /GL /D _MBCS /D WIN32 /D _WINDOWS /D HAS_MSVC_GL_LTCG /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_8874a.dir\\Debug\\\\" /Fd"cmTC_8874a.dir\\Debug\\vc140.pdb" /Gd /TP /errorReport:queue "C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\src.cxx"
+          
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\x86_amd64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\Debug\\cmTC_8874a.exe" /INCREMENTAL /NOLOGO "-LTCG" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg/Debug/cmTC_8874a.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg/Debug/cmTC_8874a.lib" /MACHINE:X64  /machine:x64 cmTC_8874a.dir\\Debug\\src.obj
+        LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification [C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\cmTC_8874a.vcxproj]
+          Generating code
+          Finished generating code
+          cmTC_8874a.vcxproj -> C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\Debug\\cmTC_8874a.exe
+          cmTC_8874a.vcxproj -> C:/Users/12873/Desktop/smc304/project/drivers/torque_motor/sdk_standalone-main-V4/sdk_standalone-main/sdk_py/build/temp.win-amd64-cpython-310/Release/CMakeFiles/CMakeScratch/TryCompile-ykfxsg/Debug/cmTC_8874a.pdb (Full PDB)
+        FinalizeBuildStatus:
+          正在删除文件“cmTC_8874a.dir\\Debug\\cmTC_8874a.tlog\\unsuccessfulbuild”。
+          正在对“cmTC_8874a.dir\\Debug\\cmTC_8874a.tlog\\cmTC_8874a.lastbuildstate”执行 Touch 任务。
+        已完成生成项目“C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\cmTC_8874a.vcxproj”(默认目标)的操作。
+        
+        已成功生成。
+        
+        “C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\cmTC_8874a.vcxproj”(默认目标) (1) ->
+        (Link 目标) -> 
+          LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification [C:\\Users\\12873\\Desktop\\smc304\\project\\drivers\\torque_motor\\sdk_standalone-main-V4\\sdk_standalone-main\\sdk_py\\build\\temp.win-amd64-cpython-310\\Release\\CMakeFiles\\CMakeScratch\\TryCompile-ykfxsg\\cmTC_8874a.vcxproj]
+        
+            1 个警告
+            0 个错误
+        
+        已用时间 00:00:00.59
+        
+      exitCode: 0
+...

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_py\wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\Modbus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\RMAxis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\libmodbus-data.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\libmodbus-rtu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\libmodbus-tcp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\libmodbus.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\libmodbus_merged.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\Modbus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\RMAxis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\config_linux.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\config_win.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-private.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-rtu-private.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-rtu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-tcp-private.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-tcp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus-version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_common\libmodbus\modbus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\12873\Desktop\smc304\project\drivers\torque_motor\sdk_standalone-main-V4\sdk_standalone-main\sdk_py\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{6BCB0852-75F9-3E5C-AA01-729B7FD7C47F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4C3CC8A8-2006-380B-BBDC-2934FAC77CE7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

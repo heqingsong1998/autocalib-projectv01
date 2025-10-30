@@ -1,0 +1,171 @@
+
+motioncard:
+  driver: dll
+  dll_path: ./LTSMC.dll
+  tcp:
+    ip: 192.168.5.11
+  serial:
+    com: COM3
+    baud: 115200
+    bytesize: 8
+    parity: 0
+    stopbits: 1
+
+
+##运动控制卡限位引脚平时是高电平
+axes:
+  
+  axis_0:
+    pulse_mode: 1        # 脉冲+方向模式
+    equiv: 533.333           # 533.333脉冲/mm
+    profile:
+      vmin: 1.0          # 起始速度 mm/s
+      vmax: 5.0         # 最大速度 mm/s
+      acc: 0.1          # 加速度 mm/s²
+      dec: 0.1           # 减速度 mm/s²
+      s_time: 0.1        # S曲线时间 s
+    homing:
+      org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
+      filter_time: 1000  # 滤波时间(ms)
+      pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
+      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+                         #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
+      home_mode:         # 回原点模式设置 ⭐ 新增
+        home_dir: 0      # 回原点方向: 0=负向, 1=正向
+        vel_mode: 1.0    # 速度模式: 1.0=使用profile速度
+        mode: 1          # 回零模式: 0=一次回零, 1=一次回零+回找
+        source: 0        # 信号源: 0=标准ORG端口
+      home_profile:
+        low_vel: 1.0     # 回原点低速 mm/s
+        high_vel: 5.0    # 回原点高速 mm/s
+        acc_time: 0.2    # 加速时间 s
+        dec_time: 0.2    # 减速时间 s
+
+  axis_1:
+    pulse_mode: 1        # 脉冲+方向模式
+    equiv: 533.333           # 533.333脉冲/mm
+    profile:
+      vmin: 1.0          # 起始速度 mm/s
+      vmax: 5.0         # 最大速度 mm/s
+      acc: 0.1           # 加速度 mm/s²
+      dec: 0.1           # 减速度 mm/s²
+      s_time: 0.1        # S曲线时间 
+    homing:
+      org_logic: 0       # 原点逻辑: 0=常开, 1=常闭
+      filter_time: 1000  # 滤波时间(ms)
+      pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
+      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+                         #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
+      home_mode:         # 回原点模式设置 ⭐ 新增
+        home_dir: 0      # 回原点方向: 0=负向, 1=正向
+        vel_mode: 1.0    # 速度模式: 1.0=使用profile速度
+        mode: 1          # 回零模式: 0=一次回零, 1=一次回零+回找
+        source: 0        # 信号源: 0=标准ORG端口
+      home_profile:
+        low_vel: 1.0     # 回原点低速 mm/s
+        high_vel: 5.0    # 回原点高速 mm/s
+        acc_time: 0.2    # 加速时间 s
+        dec_time: 0.2    # 减速时间 s
+
+  axis_2:
+    pulse_mode: 3        # 脉冲+方向模式
+    equiv: 533.333           # 533.333脉冲/mm
+    profile:
+      vmin: 1.0          # 起始速度 mm/s
+      vmax: 5.0         # 最大速度 mm/s
+      acc: 0.1           # 加速度 mm/s²
+      dec: 0.1           # 减速度 mm/s²
+      s_time: 0.1        # S曲线时间 s
+    homing:
+      org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
+      filter_time: 1000  # 滤波时间(ms)
+      pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
+      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+                         #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
+      home_mode:         # 回原点模式设置 ⭐ 新增
+        home_dir: 0      # 回原点方向: 0=负向, 1=正向
+        vel_mode: 1.0    # 速度模式: 1.0=使用profile速度
+        mode: 1          # 回零模式: 0=一次回零, 1=一次回零+回找
+        source: 0        # 信号源: 0=标准ORG端口
+      home_profile:
+        low_vel: 1.0     # 回原点低速 mm/s
+        high_vel: 5.0    # 回原点高速 mm/s
+        acc_time: 0.2    # 加速时间 s
+        dec_time: 0.2    # 减速时间 s
+
+  axis_3:
+    pulse_mode: 0        # 脉冲+方向模式
+    equiv: 400           # 400脉冲/mm
+    profile:
+      vmin: 1.0          # 起始速度 mm/s
+      vmax: 10.0         # 最大速度 mm/s
+      acc: 0.1          # 加速度 mm/s²
+      dec: 0.1           # 减速度 mm/s²
+      s_time: 0.1        # S曲线时间 s
+    homing:
+      org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
+      filter_time: 1000  # 滤波时间(ms)
+      pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
+      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+                         #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
+      home_mode:         # 回原点模式设置 ⭐ 新增
+        home_dir: 0      # 回原点方向: 0=负向, 1=正向
+        vel_mode: 1.0    # 速度模式: 1.0=使用profile速度
+        mode: 1          # 回零模式: 0=一次回零, 1=一次回零+回找
+        source: 0        # 信号源: 0=标准ORG端口
+
+      home_profile:
+        low_vel: 1.0     # 回原点低速 mm/s
+        high_vel: 5.0    # 回原点高速 mm/s
+        acc_time: 0.2    # 加速时间 s
+        dec_time: 0.2    # 减速时间 s
+
+
+
+# 传感器配置
+sensor:
+  # M8128B1 六轴力传感器配置(标准六轴)
+  m8128b1:
+    type: "m8128b1"
+    port: "COM5"
+    baudrate: 115200
+    channels: 6
+    check_mode: "SUM"
+    rate_hz: 200
+    dnpch_set: 1
+    read_chunk: 2048
+    print_raw_hex: false
+
+  # 五轴USB-CAN传感器配置
+  wuzhou_five_axis:
+    type: "wuzhou_five_axis"
+    port: "COM6"           # 对应原代码的 PORT
+    baudrate: 115200       # 对应原代码的 BAUD
+    timeout: 0.05          # 对应原代码的 TIMEOUT
+    read_chunk: 256        # 对应原代码中 ser.read(256)
+    
+    # 初始化指令帧（22B，每帧间隔50ms）- 对应原代码的 INIT_FRAMES
+    init_frames:
+      - "49 3B 40 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
+      - "49 3B 41 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
+      - "49 3B 42 57 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
+      - "49 3B 44 57 01 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
+    
+    # 清零帧 - 对应原代码的 ZERO_FRAME_HEX
+    zero_frame_hex: "5A 08 04 00 00 10 00 01 00 00 00 00 00 00 00 A5"
+  
+    # 六轴USB-CAN传感器配置
+  lab_six_axis:
+    type: "lab_six_axis"
+    port: "COM7"           # 对应原代码的 PORT
+    baudrate: 115200       # 对应原代码的 BAUD
+    timeout: 0.05          # 对应原代码的 TIMEOUT
+    read_chunk: 256        # 对应原代码中 ser.read(256)
+
+
+torque_motor:
+  port: "\\\\.\\COM20"
+  baud: 115200
+  slave: 0
+  
+    
