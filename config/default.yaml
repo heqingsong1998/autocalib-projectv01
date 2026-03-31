@@ -18,7 +18,7 @@ axes:
   
   axis_0:
     pulse_mode: 1        # 双脉冲模式
-    equiv: 2962.96          # 2962.96 脉冲/mm
+    equiv: 2962.96          # 2962.96 脉冲/°
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -44,7 +44,7 @@ axes:
 
   axis_1:
     pulse_mode: 1        # 双脉冲模式
-    equiv: 3636.36          # 3636.36 脉冲/mm
+    equiv: 3636.36          # 3636.36 脉冲/°
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -69,7 +69,7 @@ axes:
         dec_time: 0.2    # 减速时间 s
 
   axis_2:
-    pulse_mode: 3        # 脉冲输出模式3（与控制卡参数定义一致）
+    pulse_mode: 0        # 脉冲输出模式3（与控制卡参数定义一致）
     equiv: 500           # 500 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
@@ -107,7 +107,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -139,7 +139,7 @@ sensor:
 
 
 torque_motor:
-  port: "\\\\.\\COM29"
+  port: "\\\\.\\COM17"
   baud: 115200
   slave: 0
   
