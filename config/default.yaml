@@ -12,12 +12,13 @@ motioncard:
     stopbits: 1
 
 
+
 ##运动控制卡限位引脚平时是高电平
 axes:
   
   axis_0:
     pulse_mode: 1        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    equiv: 2962.96          # 533.333脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -28,7 +29,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -43,7 +44,7 @@ axes:
 
   axis_1:
     pulse_mode: 1        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    equiv: 3636.36          # 533.333脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -51,10 +52,10 @@ axes:
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 
     homing:
-      org_logic: 0       # 原点逻辑: 0=常开, 1=常闭
+      org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -69,10 +70,10 @@ axes:
 
   axis_2:
     pulse_mode: 3        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    equiv: 500           # 533.333脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
-      vmax: 5.0         # 最大速度 mm/s
+      vmax: 2.0         # 最大速度 mm/s
       acc: 0.1           # 加速度 mm/s²
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 s
@@ -80,7 +81,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -95,10 +96,10 @@ axes:
 
   axis_3:
     pulse_mode: 0        # 脉冲+方向模式
-    equiv: 400           # 400脉冲/mm
+    equiv: 500           # 400脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
-      vmax: 10.0         # 最大速度 mm/s
+      vmax: 2.0         # 最大速度 mm/s
       acc: 0.1          # 加速度 mm/s²
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 s
