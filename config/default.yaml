@@ -164,7 +164,7 @@ sensor:
 
 
 torque_motor:
-  port: "\\\\.\\COM20"
+  port: "\\\\.\\COM29"
   baud: 115200
   slave: 0
   
