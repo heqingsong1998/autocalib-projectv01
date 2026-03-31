@@ -136,32 +136,6 @@ sensor:
     read_chunk: 2048
     print_raw_hex: false
 
-  # 五轴USB-CAN传感器配置
-  wuzhou_five_axis:
-    type: "wuzhou_five_axis"
-    port: "COM6"           # 对应原代码的 PORT
-    baudrate: 115200       # 对应原代码的 BAUD
-    timeout: 0.05          # 对应原代码的 TIMEOUT
-    read_chunk: 256        # 对应原代码中 ser.read(256)
-    
-    # 初始化指令帧（22B，每帧间隔50ms）- 对应原代码的 INIT_FRAMES
-    init_frames:
-      - "49 3B 40 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
-      - "49 3B 41 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
-      - "49 3B 42 57 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
-      - "49 3B 44 57 01 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 45 2E"
-    
-    # 清零帧 - 对应原代码的 ZERO_FRAME_HEX
-    zero_frame_hex: "5A 08 04 00 00 10 00 01 00 00 00 00 00 00 00 A5"
-  
-    # 六轴USB-CAN传感器配置
-  lab_six_axis:
-    type: "lab_six_axis"
-    port: "COM7"           # 对应原代码的 PORT
-    baudrate: 115200       # 对应原代码的 BAUD
-    timeout: 0.05          # 对应原代码的 TIMEOUT
-    read_chunk: 256        # 对应原代码中 ser.read(256)
-
 
 torque_motor:
   port: "\\\\.\\COM29"
