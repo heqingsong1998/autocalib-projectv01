@@ -17,8 +17,8 @@ motioncard:
 axes:
   
   axis_0:
-    pulse_mode: 1        # 脉冲+方向模式
-    equiv: 2962.96          # 533.333脉冲/mm
+    pulse_mode: 1        # 双脉冲模式
+    equiv: 2962.96          # 2962.96 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -43,8 +43,8 @@ axes:
         dec_time: 0.2    # 减速时间 s
 
   axis_1:
-    pulse_mode: 1        # 脉冲+方向模式
-    equiv: 3636.36          # 533.333脉冲/mm
+    pulse_mode: 1        # 双脉冲模式
+    equiv: 3636.36          # 3636.36 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -69,8 +69,8 @@ axes:
         dec_time: 0.2    # 减速时间 s
 
   axis_2:
-    pulse_mode: 3        # 脉冲+方向模式
-    equiv: 500           # 533.333脉冲/mm
+    pulse_mode: 3        # 脉冲输出模式3（与控制卡参数定义一致）
+    equiv: 500           # 500 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 2.0         # 最大速度 mm/s
@@ -96,7 +96,7 @@ axes:
 
   axis_3:
     pulse_mode: 0        # 脉冲+方向模式
-    equiv: 500           # 400脉冲/mm
+    equiv: 500           # 500 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 2.0         # 最大速度 mm/s
