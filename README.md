@@ -1,10 +1,11 @@
 # 运动采集项目（精简版）
 
-本仓库已精简为仅保留以下三类设备相关代码：
+本仓库当前包含以下设备相关代码：
 
 1. 运动控制卡驱动（雷赛 LTSMC）
 2. 六轴力传感器驱动（M8128B1）
-3. 力矩电机驱动（motormaster）
+3. 8x8 阵列触觉传感器驱动（串口帧协议）
+4. 力矩电机驱动（motormaster）
 
 ## 当前目录结构
 
@@ -12,12 +13,21 @@
 .
 ├── apps/
 │   ├── __init__.py
+│   ├── debug_array_sensor.py  # 阵列触觉传感器调试
 │   ├── debug_motion.py         # LTSMC 运动控制调试
 │   └── debug_torque_motor.py   # 力矩电机调试 UI
 ├── config/
 │   └── default.yaml            # 运动卡 / M8128B1 / 力矩电机配置
 ├── drivers/
 │   ├── __init__.py
+│   ├── array_sensor/
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── compensation.py
+│   │   ├── processor.py
+│   │   ├── protocol.py
+│   │   ├── serial_sensor.py
+│   │   └── utils.py
 │   ├── motioncard/
 │   │   ├── __init__.py
 │   │   ├── base.py
@@ -79,11 +89,17 @@ sensor = create_sensor("m8128b1", cfg)
 ok = initialize_sensor(sensor)
 ```
 
+### 4) 阵列触觉传感器
+
+```bash
+python apps/debug_array_sensor.py
+```
+
 ## 配置说明
 
 - `config/default.yaml` 中包含：
   - `motioncard`
   - `axes`
   - `sensor.m8128b1`
+  - `sensor.array_sensor`
   - `torque_motor`
-
