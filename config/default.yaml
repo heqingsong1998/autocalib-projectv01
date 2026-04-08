@@ -144,7 +144,7 @@ sensor:
       baud: 2000000
       timeout: 0.03
     frame:
-      head: [16384, 49152, 49152, 16384]
+      head: [0x4000, 0xC000, 0xC000, 0x4000]
       size: 146
       data_size: 64
       payload_sum_bytes: 144

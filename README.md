@@ -14,6 +14,7 @@
 ├── apps/
 │   ├── __init__.py
 │   ├── debug_array_sensor.py  # 阵列触觉传感器调试
+│   ├── debug_array_sensor_3d.py # 阵列触觉传感器3D显示
 │   ├── debug_motion.py         # LTSMC 运动控制调试
 │   └── debug_torque_motor.py   # 力矩电机调试 UI
 ├── config/
@@ -94,6 +95,12 @@ ok = initialize_sensor(sensor)
 
 ```bash
 python apps/debug_array_sensor.py
+```
+
+### 5) 阵列触觉传感器 3D 可视化
+
+```bash
+python apps/debug_array_sensor_3d.py
 ```
 
 ## 配置说明
