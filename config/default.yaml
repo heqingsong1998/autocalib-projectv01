@@ -12,12 +12,13 @@ motioncard:
     stopbits: 1
 
 
+
 ##运动控制卡限位引脚平时是高电平
 axes:
   
   axis_0:
-    pulse_mode: 1        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    pulse_mode: 1        # 双脉冲模式
+    equiv: 2962.96          # 2962.96 脉冲/°
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -28,7 +29,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -42,8 +43,8 @@ axes:
         dec_time: 0.2    # 减速时间 s
 
   axis_1:
-    pulse_mode: 1        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    pulse_mode: 1        # 双脉冲模式
+    equiv: 3636.36          # 3636.36 脉冲/°
     profile:
       vmin: 1.0          # 起始速度 mm/s
       vmax: 5.0         # 最大速度 mm/s
@@ -51,10 +52,10 @@ axes:
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 
     homing:
-      org_logic: 0       # 原点逻辑: 0=常开, 1=常闭
+      org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -68,11 +69,11 @@ axes:
         dec_time: 0.2    # 减速时间 s
 
   axis_2:
-    pulse_mode: 3        # 脉冲+方向模式
-    equiv: 533.333           # 533.333脉冲/mm
+    pulse_mode: 0        # 脉冲输出模式3（与控制卡参数定义一致）
+    equiv: 500           # 500 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
-      vmax: 5.0         # 最大速度 mm/s
+      vmax: 2.0         # 最大速度 mm/s
       acc: 0.1           # 加速度 mm/s²
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 s
@@ -80,7 +81,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 3       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -95,10 +96,10 @@ axes:
 
   axis_3:
     pulse_mode: 0        # 脉冲+方向模式
-    equiv: 400           # 400脉冲/mm
+    equiv: 500           # 500 脉冲/mm
     profile:
       vmin: 1.0          # 起始速度 mm/s
-      vmax: 10.0         # 最大速度 mm/s
+      vmax: 2.0         # 最大速度 mm/s
       acc: 0.1          # 加速度 mm/s²
       dec: 0.1           # 减速度 mm/s²
       s_time: 0.1        # S曲线时间 s
@@ -106,7 +107,7 @@ axes:
       org_logic: 1       # 原点逻辑: 0=常开, 1=常闭
       filter_time: 1000  # 滤波时间(ms)
       pel_enable: 1      # 正极限使能: 0=正负限位禁用, 1=正负限位使能
-      pel_logic: 0       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
+      pel_logic: 1       # 正极限逻辑: 0=正负限位低电平有效, 1=正负限位高电平有效，
                          #2：正限位低有效，负限位高有效， 3：正限位高有效，负限位低有效
       home_mode:         # 回原点模式设置 ⭐ 新增
         home_dir: 0      # 回原点方向: 0=负向, 1=正向
@@ -136,9 +137,92 @@ sensor:
     read_chunk: 2048
     print_raw_hex: false
 
+  # 8x8 阵列触觉传感器
+  array_sensor:
+    serial:
+      port: "COM3"
+      baud: 2000000
+      timeout: 0.03
+    frame:
+      head: [0x4000, 0xC000, 0xC000, 0x4000]
+      size: 146
+      data_size: 64
+      payload_sum_bytes: 144
+    processing:
+      pressure_scale: 10.0
+      mapping:
+        - [7, 6, 5, 4, 3, 2, 1, 0]
+        - [15, 14, 13, 12, 11, 10, 9, 8]
+        - [23, 22, 21, 20, 19, 18, 17, 16]
+        - [31, 30, 29, 28, 27, 26, 25, 24]
+        - [39, 38, 37, 36, 35, 34, 33, 32]
+        - [47, 46, 45, 44, 43, 42, 41, 40]
+        - [55, 54, 53, 52, 51, 50, 49, 48]
+        - [63, 62, 61, 60, 59, 58, 57, 56]
+      switches:
+        use_volterra: true
+        use_temperature_compensation: false
+        use_dynamic_compensation: true
+        use_hysteresis_compensation: true
+        use_calibration: true
+      temperature_compensation:
+        z: -9.6442
+        x: 1.2181
+        y: -0.19054
+      dynamic_compensation:
+        x_pos:
+          alpha_n: 0.99999009
+          beta_n: 0.00000867
+          alpha_p: [0.99990083, 0.99990036, 0.99910478, 0, 0, 0, 0]
+          beta_p: [0.06427631, 0.00615128, 0.00999999, 0, 0, 0, 0]
+        x_neg:
+          alpha_n: 0.99999033
+          beta_n: 0.00000214
+          alpha_p: [0.99999990, 0.99999989, 0, 0, 0, 0, 0]
+          beta_p: [0.00000290, 0.00000032, 0, 0, 0, 0, 0]
+        y_pos:
+          alpha_n: 0.999995
+          beta_n: 0.00000005
+          alpha_p: [0.9999, 0.9995, 0.996, 0, 0, 0, 0]
+          beta_p: [0.015, 0.025, 0.03, 0, 0, 0, 0]
+        y_neg:
+          alpha_n: 0.999995
+          beta_n: 0.00000005
+          alpha_p: [0.9999, 0.9995, 0.996, 0, 0, 0, 0]
+          beta_p: [0.015, 0.025, 0.03, 0, 0, 0, 0]
+        z:
+          alpha_n: 0.99999972
+          beta_n: 0.00000199
+          alpha_p: [0.99991031, 0.99991423, 0.99901882, 0.985, 0.989, 0.987, 0.8765]
+          beta_p: [0.00011295, 0.00005316, 0.08915782, 0.040, 0.065, 0.042, 0.062]
+      hysteresis_compensation:
+        z:
+          a: -9.9874e-06
+          b: 0.15841
+          c: 0.0
+          threshold: 30.0
+          queue_size: 10
+      calibration:
+        z: {a: 1.453e-07, b: 0.028351, c: 0.0}
+        x_pos: {a: -3.14019e-04, b: 8.87596e-01, c: 0.0}
+        x_neg: {a: 4.80751e-04, b: 1.0419e+00, c: 0.0}
+        y_pos: {a: -6.06168e-04, b: 1.35464e+00, c: 0.0}
+        y_neg: {a: 9.80956e-04, b: 1.44280e+00, c: 0.0}
+      volterra:
+        use_builtin_kernels: true   # 使用 drivers/array_sensor/volterra_plus.py 中完整核参数
+        history_len: 501
+        sign_eps: 1.0e-6
+        # 如需覆盖内置核，把 use_builtin_kernels 设为 false 并提供下列字段
+        # shear:
+        #   x_pos: []
+        #   x_neg: []
+        #   y_pos: []
+        #   y_neg: []
+        # normal: []
+
 
 torque_motor:
-  port: "\\\\.\\COM29"
+  port: "\\\\.\\COM17"
   baud: 115200
   slave: 0
   
