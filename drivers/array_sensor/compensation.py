@@ -5,6 +5,13 @@ from collections import deque
 from typing import Dict, Iterable, Tuple
 
 import numpy as np
+from .volterra_plus import (
+    VOLTERRA_NORMAL,
+    VOLTERRA_SHEAR_X_NEG,
+    VOLTERRA_SHEAR_X_POS,
+    VOLTERRA_SHEAR_Y_NEG,
+    VOLTERRA_SHEAR_Y_POS,
+)
 
 
 class DynamicCompensator:
@@ -68,11 +75,19 @@ class HysteresisCompensator:
 
 class VolterraCompensator:
     def __init__(self, cfg: Dict):
-        self.vx_pos = np.asarray(cfg["shear"]["x_pos"], dtype=float)
-        self.vx_neg = np.asarray(cfg["shear"]["x_neg"], dtype=float)
-        self.vy_pos = np.asarray(cfg["shear"]["y_pos"], dtype=float)
-        self.vy_neg = np.asarray(cfg["shear"]["y_neg"], dtype=float)
-        self.vn = np.asarray(cfg["normal"], dtype=float)
+        use_builtin = bool(cfg.get("use_builtin_kernels", True))
+        if use_builtin:
+            self.vx_pos = np.asarray(VOLTERRA_SHEAR_X_POS, dtype=float)
+            self.vx_neg = np.asarray(VOLTERRA_SHEAR_X_NEG, dtype=float)
+            self.vy_pos = np.asarray(VOLTERRA_SHEAR_Y_POS, dtype=float)
+            self.vy_neg = np.asarray(VOLTERRA_SHEAR_Y_NEG, dtype=float)
+            self.vn = np.asarray(VOLTERRA_NORMAL, dtype=float)
+        else:
+            self.vx_pos = np.asarray(cfg["shear"]["x_pos"], dtype=float)
+            self.vx_neg = np.asarray(cfg["shear"]["x_neg"], dtype=float)
+            self.vy_pos = np.asarray(cfg["shear"]["y_pos"], dtype=float)
+            self.vy_neg = np.asarray(cfg["shear"]["y_neg"], dtype=float)
+            self.vn = np.asarray(cfg["normal"], dtype=float)
         self.sign_eps = float(cfg.get("sign_eps", 1e-6))
         h = int(cfg.get("history_len", 128))
         self.hx_pos = deque(maxlen=h)
