@@ -54,17 +54,26 @@ class ArraySensor(ArraySensorBase):
             return
         self.processor.zero(last["raw"], last["temp1"], last["temp2"])
 
-    def read_frame(self) -> Optional[Dict[str, Any]]:
+    def read_frames(self):
         if not self.connected:
-            return None
+            return []
         chunk = self.ser.read(self.ser.in_waiting or 1)
         if not chunk:
-            return None
+            return []
         parsed_list = self.protocol.feed(chunk)
         if not parsed_list:
+            return []
+
+        results = []
+        for parsed in parsed_list:
+            result = self.processor.process(parsed["raw"], parsed["temp1"], parsed["temp2"])
+            result.update(parsed)
+            result["timestamp"] = datetime.now().isoformat(timespec="milliseconds")
+            results.append(result)
+        return results
+
+    def read_frame(self) -> Optional[Dict[str, Any]]:
+        frames = self.read_frames()
+        if not frames:
             return None
-        parsed = parsed_list[-1]
-        result = self.processor.process(parsed["raw"], parsed["temp1"], parsed["temp2"])
-        result.update(parsed)
-        result["timestamp"] = datetime.now().isoformat(timespec="milliseconds")
-        return result
+        return frames[-1]

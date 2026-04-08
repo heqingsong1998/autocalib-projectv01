@@ -140,7 +140,7 @@ sensor:
   # 8x8 阵列触觉传感器
   array_sensor:
     serial:
-      port: "COM3"
+      port: "COM5"
       baud: 2000000
       timeout: 0.03
     frame:

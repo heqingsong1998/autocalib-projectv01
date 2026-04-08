@@ -1,6 +1,8 @@
 import csv
 import os
 import sys
+import threading
+import time
 from datetime import datetime
 
 import numpy as np
@@ -32,6 +34,15 @@ class ArraySensor3DWindow(QtWidgets.QMainWindow):
         self.collecting = False
         self.csv_file = None
         self.csv_writer = None
+        self.last_frame = None
+        self.zero_reference_ui = np.zeros(64, dtype=float)
+        self.baseline_temp1 = 0.0
+        self.baseline_temp2 = 0.0
+
+        self._running = True
+        self._latest_frame = None
+        self._frame_lock = threading.Lock()
+        self._csv_lock = threading.Lock()
 
         self.setWindowTitle("Array Sensor 3D + 实时面板")
         self.resize(1300, 800)
@@ -54,7 +65,10 @@ class ArraySensor3DWindow(QtWidgets.QMainWindow):
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self._tick)
-        self.timer.start(50)
+        self.timer.start(100)
+
+        self.acq_thread = threading.Thread(target=self._acquire_loop, daemon=True)
+        self.acq_thread.start()
 
     def _init_3d_items(self):
         grid = gl.GLGridItem()
@@ -124,32 +138,50 @@ class ArraySensor3DWindow(QtWidgets.QMainWindow):
         os.makedirs(LOG_DIR, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         path = os.path.join(LOG_DIR, f"array_sensor_{ts}.csv")
-        self.csv_file = open(path, "w", newline="", encoding="utf-8")
-        self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow([
-            "timestamp", "fx", "fy", "fz", "px", "py", "pz", "temp1", "temp2", *[f"r{i}" for i in range(64)]
-        ])
-        self.collecting = True
+        with self._csv_lock:
+            self.csv_file = open(path, "w", newline="", encoding="utf-8")
+            self.csv_writer = csv.writer(self.csv_file)
+            self.csv_writer.writerow([
+                "timestamp", "fx", "fy", "fz", "px", "py", "pz", "temp1", "temp2", *[f"r{i}" for i in range(64)]
+            ])
+            self.collecting = True
         self.status.setText(f"状态：采集中 -> {path}")
 
     def save_data(self):
-        if self.csv_file:
-            self.csv_file.flush()
-            self.csv_file.close()
-        self.csv_file = None
-        self.csv_writer = None
-        self.collecting = False
+        with self._csv_lock:
+            if self.csv_file:
+                self.csv_file.flush()
+                self.csv_file.close()
+            self.csv_file = None
+            self.csv_writer = None
+            self.collecting = False
         self.status.setText("状态：已停止采集并保存")
 
     def zero_sensor(self):
-        self.sensor.zero()
-        self.status.setText("状态：已清零")
-
-    def _tick(self):
-        frame = self.sensor.read_frame()
-        if frame is None:
+        if self.last_frame is None:
+            self.status.setText("状态：清零失败（暂无数据）")
             return
 
+        raw = np.asarray(self.last_frame["raw"], dtype=float)
+        self.zero_reference_ui = raw.copy()
+        self.baseline_temp1 = float(self.last_frame.get("temp1", 0.0))
+        self.baseline_temp2 = float(self.last_frame.get("temp2", 0.0))
+
+        # Keep processor and UI baseline consistent.
+        if hasattr(self.sensor, "processor"):
+            self.sensor.processor.zero(
+                self.last_frame["raw"],
+                self.last_frame["temp1"],
+                self.last_frame["temp2"],
+            )
+        else:
+            self.sensor.zero()
+
+        # Refresh immediately with the current frame under the new baseline.
+        self._update_view_from_frame(self.last_frame)
+        self.status.setText("状态：已清零")
+
+    def _update_view_from_frame(self, frame):
         force = frame["force"]
         pressure = frame["pressure"]
 
@@ -160,30 +192,68 @@ class ArraySensor3DWindow(QtWidgets.QMainWindow):
         self.p_fy.setText(f"{pressure['fy']:.2f}")
         self.f_fy.setText(f"{force['fy']:.2f}")
 
-        rel = np.asarray(frame["relative"], dtype=float) / 100.0
+        # Match Cali_arrary_sensor_newcode.py logic: 3D uses raw - local zero baseline.
+        rel = (np.asarray(frame["raw"], dtype=float) - self.zero_reference_ui) / 100.0
         for i in range(64):
             row, col = i // 8, i % 8
             sensor_index = self.mapping[row, col]
             h = rel[sensor_index]
-            self.vertexes[i, 4:, :] = [(row, col, h), (row, col + 0.8, h), (row + 0.8, col, h), (row + 0.8, col + 0.8, h)]
+            self.vertexes[i, 4:, :] = [
+                (row, col, h),
+                (row, col + 0.8, h),
+                (row + 0.8, col, h),
+                (row + 0.8, col + 0.8, h),
+            ]
             self.meshes[i].setMeshData(
                 vertexes=self.vertexes[i],
                 faces=self.faces,
                 faceColors=np.array([self.color_row[row]] * 12),
             )
 
-        if self.collecting and self.csv_writer:
-            self.csv_writer.writerow([
-                frame["timestamp"],
-                force["fx"], force["fy"], force["fz"],
-                pressure["fx"], pressure["fy"], pressure["fz"],
-                frame["temp1"], frame["temp2"],
-                *frame["relative"],
-            ])
+    def _tick(self):
+        with self._frame_lock:
+            frame = self._latest_frame
+        if frame is None:
+            return
+        self.last_frame = frame
+        self._update_view_from_frame(frame)
+
+    def _acquire_loop(self):
+        while self._running:
+            frames = self.sensor.read_frames() if hasattr(self.sensor, "read_frames") else []
+            if not frames:
+                frame = self.sensor.read_frame()
+                frames = [frame] if frame is not None else []
+
+            if not frames:
+                time.sleep(0.001)
+                continue
+
+            with self._frame_lock:
+                self._latest_frame = frames[-1]
+
+            with self._csv_lock:
+                if self.collecting and self.csv_writer:
+                    for frame in frames:
+                        force = frame["force"]
+                        pressure = frame["pressure"]
+                        self.csv_writer.writerow([
+                            frame["timestamp"],
+                            force["fx"], force["fy"], force["fz"],
+                            pressure["fx"], pressure["fy"], pressure["fz"],
+                            frame["temp1"], frame["temp2"],
+                            *frame["relative"],
+                        ])
 
     def closeEvent(self, event):
         try:
             self.timer.stop()
+        except Exception:
+            pass
+        try:
+            self._running = False
+            if hasattr(self, "acq_thread") and self.acq_thread.is_alive():
+                self.acq_thread.join(timeout=1.0)
         except Exception:
             pass
         try:
