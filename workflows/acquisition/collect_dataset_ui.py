@@ -478,6 +478,12 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit(f"参数错误: {e}")
             return
 
+        try:
+            self._prepare_home_before_collect()
+        except Exception as e:
+            self.sig_log.emit(f"采集前回零失败: {e}")
+            return
+
         axis0_vals = frange(params["axis0_min"], params["axis0_max"], params["step_deg"])
         axis1_vals = frange(params["axis1_min"], params["axis1_max"], params["step_deg"])
         points = [(a0, a1) for a0 in axis0_vals for a1 in axis1_vals]
@@ -516,7 +522,7 @@ class CollectorUI(QtWidgets.QMainWindow):
                     params["force_band"],
                     int(params["chk_ms"]),
                 )
-                self._wait_torque_done(params["point_timeout"])
+                self._wait_torque_done(params["point_timeout"], require_motion_start=True)
 
                 # 3) 静态采样
                 frames = self._collect_array_frames(params["static_frames"], timeout_s=params["point_timeout"])
@@ -551,6 +557,25 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit(f"采集异常: {e}")
         finally:
             writer.close()
+
+    def _prepare_home_before_collect(self):
+        self.sig_log.emit("采集前执行回零：轴0/轴1 -> 力矩电机")
+        for axis in (0, 1):
+            if self._stop_event.is_set():
+                raise RuntimeError("用户停止")
+            self.sig_log.emit(f"[预处理] 轴{axis}初始化...")
+            if not full_axis_initialization(self.motion, axis):
+                raise RuntimeError(f"轴{axis}初始化失败")
+            self.sig_log.emit(f"[预处理] 轴{axis}回原点...")
+            if not perform_homing(self.motion, axis, timeout=60.0):
+                raise RuntimeError(f"轴{axis}回原点失败")
+
+        if self._stop_event.is_set():
+            raise RuntimeError("用户停止")
+        self.sig_log.emit("[预处理] 力矩电机回原点...")
+        self.torque.home(0)
+        self._wait_torque_done(20.0, require_motion_start=True)
+        self.sig_log.emit("采集前回零完成")
 
     def _read_params(self) -> Dict:
         params = {
@@ -600,17 +625,23 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.motion.stop(axis, mode=1)
         raise RuntimeError(f"轴{axis}运动超时")
 
-    def _wait_torque_done(self, timeout_s: float):
+    def _wait_torque_done(self, timeout_s: float, require_motion_start: bool = False):
         t0 = time.time()
         stable = 0
+        seen_motion = False
         while time.time() - t0 < timeout_s:
             if self._stop_event.is_set():
                 self.torque.stop(0)
                 raise RuntimeError("用户停止")
             moving = not self.torque.is_done(0)
             vel = abs(self.torque.get_velocity(0))
+            if moving or vel >= 0.01:
+                seen_motion = True
             if (not moving) or vel < 0.01:
-                stable += 1
+                if require_motion_start and not seen_motion:
+                    stable = 0
+                else:
+                    stable += 1
             else:
                 stable = 0
             if stable >= 3:
