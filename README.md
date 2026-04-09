@@ -97,6 +97,30 @@ ok = initialize_sensor(sensor)
 python apps/debug_array_sensor_3d.py
 ```
 
+### 5) 轴0/轴1 + 力矩电机 + 阵列传感器 数据集采集 UI
+
+```bash
+python workflows/acquisition/collect_dataset_ui.py
+```
+
+输出将写入 `datasets/<run_id>/`，包含：
+- `samples/sample_*.npz`（单点单文件，便于断点续采与训练读取）
+- `manifest.csv` / `manifest.jsonl`（索引与标签）
+- `run_meta.json`（参数快照）
+
+## 建议的三层目录（采集 / 训练 / 验证）
+
+```text
+workflows/
+├── acquisition/
+│   ├── collect_dataset_ui.py  # 采集UI（当前可用）
+│   └── dataset_writer.py      # 训练友好的样本落盘
+├── training/
+│   └── train_ui_stub.py       # 训练层入口（占位）
+└── validation/
+    └── validate_ui_stub.py    # 验证层入口（占位）
+```
+
 ## 配置说明
 
 - `config/default.yaml` 中包含：
