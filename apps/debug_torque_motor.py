@@ -138,6 +138,24 @@ def stop_now(card: TorqueMotorCard, axis: int = 0, log_fn=print, fallback_servo_
     return False
 
 
+def force_zero_checked(card: TorqueMotorCard, retries: int = 3, settle_s: float = 0.15) -> tuple[bool, str]:
+    """
+    发送力清零命令并进行读数校验（尽力而为）。
+    返回: (是否成功, 日志文本)
+    """
+    last_force = float("nan")
+    for i in range(retries):
+        card.trigger_command(25)
+        time.sleep(settle_s)
+        try:
+            last_force = card.get_force()
+            if abs(last_force) < 0.5:
+                return True, f"第{i + 1}次力清零后读数={last_force:.3f} N"
+        except Exception:
+            pass
+    return False, f"力清零后读数仍偏大/不可读（last={last_force:.3f} N）"
+
+
 # ================== 主界面 ==================
 class MotorControlUI(QMainWindow):
     def __init__(self):
@@ -439,6 +457,7 @@ class MotorControlUI(QMainWindow):
             return
 
         def job():
+            stop_now(self.card, 0, log_fn=self.log)
             self.log("回原点中...")
             self.card.home(0)
             ok = wait_until_stop(self.card, 0, timeout=120)
@@ -526,8 +545,8 @@ class MotorControlUI(QMainWindow):
             return
         try:
             stop_now(self.card, 0, log_fn=self.log)  # 清零前先停更稳妥
-            self.card.trigger_command(25)
-            self.log("已发送力清零（#25）")
+            ok, msg = force_zero_checked(self.card, retries=3, settle_s=0.15)
+            self.log(("力清零成功：" if ok else "力清零可能未完全生效：") + msg)
         except Exception as e:
             self.log(f"力清零失败：{e}")
 
