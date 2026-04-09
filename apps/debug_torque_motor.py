@@ -48,6 +48,9 @@ def _join_thread(timeout=0.5):
     with _op_lock:
         t = _op_thread
     if t and t.is_alive():
+        if t is threading.current_thread():
+            # 当前动作线程内调用 stop_now() 时，不能 join 自己。
+            return t
         t.join(timeout=timeout)
         with _op_lock:
             return _op_thread
