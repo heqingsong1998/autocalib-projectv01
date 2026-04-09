@@ -5,8 +5,10 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import yaml
 from PyQt5 import QtCore, QtWidgets
+import pyqtgraph.opengl as gl
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
@@ -37,6 +39,75 @@ def frange(start: float, stop: float, step: float) -> List[float]:
     return vals
 
 
+class ArraySensor3DDialog(QtWidgets.QDialog):
+    def __init__(self, sensor_cfg: Dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("阵列传感器3D视图")
+        self.resize(960, 700)
+
+        self.mapping = np.asarray(sensor_cfg["processing"]["mapping"], dtype=int)
+
+        root = QtWidgets.QVBoxLayout(self)
+        self.view = gl.GLViewWidget()
+        self.view.opts["distance"] = 25
+        self.view.setBackgroundColor("k")
+        root.addWidget(self.view)
+
+        self._init_3d_items()
+
+    def _init_3d_items(self):
+        grid = gl.GLGridItem()
+        grid.scale(1, 1, 1)
+        self.view.addItem(grid)
+
+        axis = gl.GLAxisItem()
+        axis.setSize(10, 10, 10)
+        self.view.addItem(axis)
+
+        self.color_row = np.array([
+            (54, 34, 159, 0.5), (76, 81, 255, 0.5), (34, 139, 244, 0.5), (10, 181, 224, 0.5),
+            (41, 207, 157, 0.5), (168, 193, 47, 0.5), (255, 200, 53, 0.5), (255, 253, 24, 0.5),
+        ]) / 255
+        self.faces = np.array([
+            [0, 1, 3], [0, 2, 3], [0, 1, 5], [0, 4, 5], [0, 2, 6], [0, 4, 6],
+            [4, 5, 7], [4, 6, 7], [2, 3, 7], [2, 6, 7], [1, 3, 7], [1, 5, 7],
+        ])
+
+        self.vertexes = np.zeros((64, 8, 3), dtype=float)
+        self.meshes = []
+        for i in range(64):
+            row, col = i // 8, i % 8
+            self.vertexes[i, :4, :] = [
+                (row, col, 0),
+                (row, col + 0.8, 0),
+                (row + 0.8, col, 0),
+                (row + 0.8, col + 0.8, 0),
+            ]
+            self.vertexes[i, 4:, :] = self.vertexes[i, :4, :]
+            colors = np.array([self.color_row[row] for _ in range(12)])
+            mesh = gl.GLMeshItem(vertexes=self.vertexes[i], faces=self.faces, faceColors=colors, drawEdges=True)
+            self.view.addItem(mesh)
+            self.meshes.append(mesh)
+
+    def update_from_frame(self, frame: Dict, zero_reference: np.ndarray):
+        rel = (np.asarray(frame["raw"], dtype=float) - zero_reference) / 100.0
+        for i in range(64):
+            row, col = i // 8, i % 8
+            sensor_index = self.mapping[row, col]
+            h = rel[sensor_index]
+            self.vertexes[i, 4:, :] = [
+                (row, col, h),
+                (row, col + 0.8, h),
+                (row + 0.8, col, h),
+                (row + 0.8, col + 0.8, h),
+            ]
+            self.meshes[i].setMeshData(
+                vertexes=self.vertexes[i],
+                faces=self.faces,
+                faceColors=np.array([self.color_row[row]] * 12),
+            )
+
+
 class CollectorUI(QtWidgets.QMainWindow):
     sig_log = QtCore.pyqtSignal(str)
     sig_progress = QtCore.pyqtSignal(int, int)
@@ -50,10 +121,17 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.motion: Optional[LTSMCMotionCard] = None
         self.torque: Optional[TorqueMotorCard] = None
         self.array_sensor = None
+        self._last_array_frame: Optional[Dict] = None
+        self._array_frame_lock = threading.Lock()
+        self._zero_reference_ui = np.zeros(64, dtype=float)
+        self.array_3d_dialog: Optional[ArraySensor3DDialog] = None
 
         self._worker: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
         self._busy_lock = threading.Lock()
+        self._preview_running = True
+        self._preview_thread = threading.Thread(target=self._array_preview_loop, daemon=True)
+        self._preview_thread.start()
 
         self._build_ui()
         self.sig_log.connect(self._append_log)
@@ -70,6 +148,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.btn_connect.clicked.connect(self.connect_all)
         self.btn_zero_sensor = QtWidgets.QPushButton("阵列传感器清零")
         self.btn_zero_sensor.clicked.connect(self.zero_array_sensor)
+        self.btn_show_3d = QtWidgets.QPushButton("显示3D图像")
+        self.btn_show_3d.clicked.connect(self.show_array_3d)
         self.btn_home_axes = QtWidgets.QPushButton("轴0/轴1回原点")
         self.btn_home_axes.clicked.connect(self.home_axes)
         self.btn_home_torque = QtWidgets.QPushButton("力矩电机回原点")
@@ -83,6 +163,7 @@ class CollectorUI(QtWidgets.QMainWindow):
         for b in (
             self.btn_connect,
             self.btn_zero_sensor,
+            self.btn_show_3d,
             self.btn_home_axes,
             self.btn_home_torque,
             self.btn_start,
@@ -225,6 +306,42 @@ class CollectorUI(QtWidgets.QMainWindow):
             self._worker = threading.Thread(target=fn, daemon=True)
             self._worker.start()
 
+    def _array_preview_loop(self):
+        while self._preview_running:
+            try:
+                if not self.array_sensor:
+                    time.sleep(0.2)
+                    continue
+
+                # 采集主流程运行时不抢占读取，避免影响数据采样。
+                if self._worker and self._worker.is_alive():
+                    time.sleep(0.1)
+                    continue
+
+                if not (self.array_3d_dialog and self.array_3d_dialog.isVisible()):
+                    time.sleep(0.15)
+                    continue
+
+                frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+                frame = frames[-1] if frames else self.array_sensor.read_frame()
+                if frame is None:
+                    time.sleep(0.05)
+                    continue
+
+                self._set_last_array_frame(frame)
+                QtCore.QMetaObject.invokeMethod(self, "_refresh_array_3d_on_ui", QtCore.Qt.QueuedConnection)
+                time.sleep(0.08)
+            except Exception:
+                time.sleep(0.2)
+
+    def _set_last_array_frame(self, frame: Optional[Dict]):
+        with self._array_frame_lock:
+            self._last_array_frame = frame
+
+    def _get_last_array_frame(self) -> Optional[Dict]:
+        with self._array_frame_lock:
+            return self._last_array_frame
+
     def connect_all(self):
         self._run_bg(self._connect_all_impl)
 
@@ -256,12 +373,60 @@ class CollectorUI(QtWidgets.QMainWindow):
         if not self.array_sensor:
             self.sig_log.emit("阵列传感器未连接")
             return
-        frame = self.array_sensor.read_frame()
+
+        frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+        frame = frames[-1] if frames else self.array_sensor.read_frame()
         if frame is None:
-            self.sig_log.emit("暂无阵列数据，无法清零")
-            return
+            frame = self._get_last_array_frame()
+            if frame is None:
+                self.sig_log.emit("暂无阵列数据，无法清零")
+                return
+
+        self._set_last_array_frame(frame)
+        self._zero_reference_ui = np.asarray(frame["raw"], dtype=float).copy()
         self.array_sensor.processor.zero(frame["raw"], frame["temp1"], frame["temp2"])
         self.sig_log.emit("阵列传感器清零完成")
+
+    def show_array_3d(self):
+        self._run_bg(self._show_array_3d_impl)
+
+    def _show_array_3d_impl(self):
+        if not self.array_sensor:
+            self.sig_log.emit("阵列传感器未连接")
+            return
+
+        frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+        frame = frames[-1] if frames else self.array_sensor.read_frame()
+        if frame is None:
+            self.sig_log.emit("暂无阵列数据，无法显示3D")
+            return
+
+        self._set_last_array_frame(frame)
+        QtCore.QMetaObject.invokeMethod(self, "_show_array_3d_on_ui", QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
+    def _show_array_3d_on_ui(self):
+        frame = self._get_last_array_frame()
+        if frame is None:
+            self.sig_log.emit("暂无阵列数据，无法显示3D")
+            return
+
+        if self.array_3d_dialog is None:
+            sensor_cfg = self.cfg["sensor"]["array_sensor"]
+            self.array_3d_dialog = ArraySensor3DDialog(sensor_cfg, parent=self)
+
+        self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
+        self.array_3d_dialog.show()
+        self.array_3d_dialog.raise_()
+        self.array_3d_dialog.activateWindow()
+        self.sig_log.emit("3D图像已刷新")
+
+    @QtCore.pyqtSlot()
+    def _refresh_array_3d_on_ui(self):
+        frame = self._get_last_array_frame()
+        if frame is None or self.array_3d_dialog is None:
+            return
+        self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
 
     def home_axes(self):
         self._run_bg(self._home_axes_impl)
@@ -467,15 +632,29 @@ class CollectorUI(QtWidgets.QMainWindow):
             if not frames:
                 time.sleep(0.001)
                 continue
+            self._set_last_array_frame(frames[-1])
             need = n_frames - len(collected)
             collected.extend(frames[:need])
         return collected
 
     def closeEvent(self, event):
         self._stop_event.set()
+        self._preview_running = False
         try:
             if self._worker and self._worker.is_alive():
                 self._worker.join(timeout=1.5)
+        except Exception:
+            pass
+
+        try:
+            if self._preview_thread and self._preview_thread.is_alive():
+                self._preview_thread.join(timeout=1.0)
+        except Exception:
+            pass
+
+        try:
+            if self.array_3d_dialog:
+                self.array_3d_dialog.close()
         except Exception:
             pass
 

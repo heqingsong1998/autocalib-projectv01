@@ -19,6 +19,7 @@ class LTSMCMotionCard(MotionCard):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         self.cn = c_ushort(0)
+        self.connected = False
 
         # ---- 加载 DLL ----
         dll_path = cfg["dll_path"]
@@ -133,6 +134,9 @@ class LTSMCMotionCard(MotionCard):
     # ================= 基本接口 =================
     def connect(self):
         """连接控制卡"""
+        if self.connected:
+            return 0
+
         # 从配置中获取IP地址
         if "tcp" in self.cfg and "ip" in self.cfg["tcp"]:
             ip_address = self.cfg["tcp"]["ip"]
@@ -144,10 +148,14 @@ class LTSMCMotionCard(MotionCard):
         
         print(f"连接到IP: {ip_address}, ret={ret}")
         _ck(ret, "smc_board_init")
+        self.connected = True
         return ret
 
     def disconnect(self):
+        if not self.connected:
+            return
         _ck(self.smc.smc_board_close(self.cn), "smc_board_close")
+        self.connected = False
 
     def move_abs(self, axis: int, pos: float):
         _ck(self.smc.smc_pmove_unit(self.cn, c_ushort(axis), c_double(pos), c_ushort(1)),
