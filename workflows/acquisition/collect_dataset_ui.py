@@ -516,7 +516,7 @@ class CollectorUI(QtWidgets.QMainWindow):
                     params["force_band"],
                     int(params["chk_ms"]),
                 )
-                self._wait_torque_done(params["point_timeout"])
+                self._wait_torque_done(params["point_timeout"], require_motion_start=True)
 
                 # 3) 静态采样
                 frames = self._collect_array_frames(params["static_frames"], timeout_s=params["point_timeout"])
@@ -600,17 +600,23 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.motion.stop(axis, mode=1)
         raise RuntimeError(f"轴{axis}运动超时")
 
-    def _wait_torque_done(self, timeout_s: float):
+    def _wait_torque_done(self, timeout_s: float, require_motion_start: bool = False):
         t0 = time.time()
         stable = 0
+        seen_motion = False
         while time.time() - t0 < timeout_s:
             if self._stop_event.is_set():
                 self.torque.stop(0)
                 raise RuntimeError("用户停止")
             moving = not self.torque.is_done(0)
             vel = abs(self.torque.get_velocity(0))
+            if moving or vel >= 0.01:
+                seen_motion = True
             if (not moving) or vel < 0.01:
-                stable += 1
+                if require_motion_start and not seen_motion:
+                    stable = 0
+                else:
+                    stable += 1
             else:
                 stable = 0
             if stable >= 3:
