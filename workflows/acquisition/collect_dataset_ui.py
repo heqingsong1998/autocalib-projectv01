@@ -314,7 +314,13 @@ class CollectorUI(QtWidgets.QMainWindow):
             if self._worker and self._worker.is_alive():
                 self.sig_log.emit("当前有任务执行中，请先停止或等待完成")
                 return
-            self._worker = threading.Thread(target=fn, daemon=True)
+            def _safe_runner():
+                try:
+                    fn()
+                except Exception as e:
+                    self.sig_log.emit(f"任务异常: {e}")
+
+            self._worker = threading.Thread(target=_safe_runner, daemon=True)
             self._worker.start()
 
     def _array_preview_loop(self):
@@ -440,6 +446,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
 
     def home_axes(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._home_axes_impl)
 
     def _home_axes_impl(self):
@@ -460,6 +468,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.sig_log.emit("轴0/1回原点完成")
 
     def home_torque(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._home_torque_impl)
 
     def _home_torque_impl(self):
@@ -470,6 +480,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.sig_log.emit("力矩电机回原点完成")
 
     def zero_torque_force(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._zero_torque_force_impl)
 
     def _zero_torque_force_impl(self):
@@ -491,6 +503,25 @@ class CollectorUI(QtWidgets.QMainWindow):
                 self.sig_log.emit("已发送力清零（#25）")
         except Exception as e:
             self.sig_log.emit(f"力清零失败: {e}")
+
+    def _force_zero_torque_checked(self, retries: int = 3, settle_s: float = 0.15, ok_abs_force_n: float = 0.5) -> bool:
+        """
+        采集流程中的力清零：带重试与读数校验，避免长时间运行后的力零点漂移累积。
+        """
+        last_force = float("nan")
+        for _ in range(retries):
+            self._force_zero_torque(log_success=False)
+            time.sleep(settle_s)
+            try:
+                st = self.torque.read_status()
+                last_force = float(st["force"])
+                if np.isfinite(last_force) and abs(last_force) <= ok_abs_force_n:
+                    self.sig_log.emit(f"力清零完成，当前力={last_force:.3f} N")
+                    return True
+            except Exception:
+                pass
+        self.sig_log.emit(f"力清零校验未通过，继续流程（当前力={last_force:.3f} N）")
+        return False
 
     def _wait_force_zero_cooldown_before_motion(self, action_name: str):
         elapsed = time.time() - self._last_torque_force_zero_ts
@@ -562,6 +593,8 @@ class CollectorUI(QtWidgets.QMainWindow):
                 self._move_axis_checked(1, theta1, params["point_timeout"])
 
                 # 2) 力矩电机下压
+                start_pos = self.torque.get_position(0)
+                self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
                 self._wait_force_zero_cooldown_before_motion("下压")
                 self.torque.precise_push(
                     params["force_n"],
@@ -575,6 +608,8 @@ class CollectorUI(QtWidgets.QMainWindow):
                     target_force_n=params["force_n"],
                     force_band_n=params["force_band"],
                     stable_ms=int(params["chk_ms"]),
+                    start_pos_mm=start_pos,
+                    max_travel_mm=params["push_dist"],
                     require_motion_start=True,
                 )
 
@@ -708,6 +743,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         target_force_n: float,
         force_band_n: float,
         stable_ms: int,
+        start_pos_mm: float,
+        max_travel_mm: float,
         require_motion_start: bool = False,
     ):
         t0 = time.time()
@@ -741,12 +778,22 @@ class CollectorUI(QtWidgets.QMainWindow):
                 stable_force_count = 0
 
             if stable_force_count >= need_stable_count:
+                self.sig_log.emit(
+                    f"力达到阈值并稳定：F={force:.3f}N, pos={pos:.3f}mm"
+                )
+                return
+
+            travel = abs(pos - start_pos_mm)
+            if np.isfinite(travel) and travel >= max(0.0, max_travel_mm - 0.05):
+                self.sig_log.emit(
+                    f"达到最大行程触发采集：travel={travel:.3f}mm, F={force:.3f}N(未达目标{target_force_n:.3f}N)"
+                )
                 return
 
             time.sleep(dt)
 
         self.torque.stop(0)
-        raise RuntimeError("力矩电机未在超时时间内达到目标力稳定条件")
+        raise RuntimeError("力矩电机未在超时时间内达到“目标力稳定”或“最大行程”条件")
 
     def _collect_array_frames(self, n_frames: int, timeout_s: float) -> List[Dict]:
         collected: List[Dict] = []
