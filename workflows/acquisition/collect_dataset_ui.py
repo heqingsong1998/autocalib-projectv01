@@ -478,6 +478,12 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit(f"参数错误: {e}")
             return
 
+        try:
+            self._prepare_home_before_collect()
+        except Exception as e:
+            self.sig_log.emit(f"采集前回零失败: {e}")
+            return
+
         axis0_vals = frange(params["axis0_min"], params["axis0_max"], params["step_deg"])
         axis1_vals = frange(params["axis1_min"], params["axis1_max"], params["step_deg"])
         points = [(a0, a1) for a0 in axis0_vals for a1 in axis1_vals]
@@ -551,6 +557,25 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit(f"采集异常: {e}")
         finally:
             writer.close()
+
+    def _prepare_home_before_collect(self):
+        self.sig_log.emit("采集前执行回零：轴0/轴1 -> 力矩电机")
+        for axis in (0, 1):
+            if self._stop_event.is_set():
+                raise RuntimeError("用户停止")
+            self.sig_log.emit(f"[预处理] 轴{axis}初始化...")
+            if not full_axis_initialization(self.motion, axis):
+                raise RuntimeError(f"轴{axis}初始化失败")
+            self.sig_log.emit(f"[预处理] 轴{axis}回原点...")
+            if not perform_homing(self.motion, axis, timeout=60.0):
+                raise RuntimeError(f"轴{axis}回原点失败")
+
+        if self._stop_event.is_set():
+            raise RuntimeError("用户停止")
+        self.sig_log.emit("[预处理] 力矩电机回原点...")
+        self.torque.home(0)
+        self._wait_torque_done(20.0, require_motion_start=True)
+        self.sig_log.emit("采集前回零完成")
 
     def _read_params(self) -> Dict:
         params = {
