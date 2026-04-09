@@ -125,6 +125,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self._array_frame_lock = threading.Lock()
         self._zero_reference_ui = np.zeros(64, dtype=float)
         self.array_3d_dialog: Optional[ArraySensor3DDialog] = None
+        self._last_torque_force_zero_ts: float = 0.0
+        self._torque_force_zero_cooldown_s: float = 0.5
 
         self._worker: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -132,6 +134,9 @@ class CollectorUI(QtWidgets.QMainWindow):
         self._preview_running = True
         self._preview_thread = threading.Thread(target=self._array_preview_loop, daemon=True)
         self._preview_thread.start()
+        self._torque_status_timer = QtCore.QTimer(self)
+        self._torque_status_timer.timeout.connect(self._refresh_torque_status)
+        self._torque_status_timer.start(300)
 
         self._build_ui()
         self.sig_log.connect(self._append_log)
@@ -154,6 +159,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.btn_home_axes.clicked.connect(self.home_axes)
         self.btn_home_torque = QtWidgets.QPushButton("力矩电机回原点")
         self.btn_home_torque.clicked.connect(self.home_torque)
+        self.btn_zero_torque_force = QtWidgets.QPushButton("力矩电机力清零")
+        self.btn_zero_torque_force.clicked.connect(self.zero_torque_force)
         self.btn_start = QtWidgets.QPushButton("开始采集")
         self.btn_start.clicked.connect(self.start_collect)
         self.btn_stop = QtWidgets.QPushButton("停止采集")
@@ -166,6 +173,7 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.btn_show_3d,
             self.btn_home_axes,
             self.btn_home_torque,
+            self.btn_zero_torque_force,
             self.btn_start,
             self.btn_stop,
         ):
@@ -283,6 +291,9 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.progress = QtWidgets.QProgressBar()
         self.progress.setRange(0, 100)
         root.addWidget(self.progress)
+
+        self.torque_status_label = QtWidgets.QLabel("力矩电机状态：未连接")
+        root.addWidget(self.torque_status_label)
 
         self.log = QtWidgets.QTextEdit()
         self.log.setReadOnly(True)
@@ -455,9 +466,45 @@ class CollectorUI(QtWidgets.QMainWindow):
         if not self.torque:
             self.sig_log.emit("力矩电机未连接")
             return
-        self.torque.home(0)
-        self._wait_torque_done(20.0)
+        self._home_torque_only(timeout_s=20.0)
         self.sig_log.emit("力矩电机回原点完成")
+
+    def zero_torque_force(self):
+        self._run_bg(self._zero_torque_force_impl)
+
+    def _zero_torque_force_impl(self):
+        if not self.torque:
+            self.sig_log.emit("力矩电机未连接")
+            return
+        self._force_zero_torque(log_success=True)
+
+    def _force_zero_torque(self, log_success: bool = False):
+        try:
+            # 先发停机指令，再执行力清零，提升清零成功率。
+            self.torque.stop(0)
+        except Exception:
+            pass
+        try:
+            self.torque.trigger_command(25)
+            self._last_torque_force_zero_ts = time.time()
+            if log_success:
+                self.sig_log.emit("已发送力清零（#25）")
+        except Exception as e:
+            self.sig_log.emit(f"力清零失败: {e}")
+
+    def _wait_force_zero_cooldown_before_motion(self, action_name: str):
+        elapsed = time.time() - self._last_torque_force_zero_ts
+        remain = self._torque_force_zero_cooldown_s - elapsed
+        if remain <= 0:
+            return
+        self.sig_log.emit(f"力清零后等待 {remain:.3f}s，再执行{action_name}")
+        # 冷却等待不应阻断后续动作，避免在非采集流程中误触 stop_event 导致电机不运动。
+        time.sleep(remain)
+
+    def _home_torque_only(self, timeout_s: float, require_motion_start: bool = False):
+        self._wait_force_zero_cooldown_before_motion("回原点")
+        self.torque.home(0)
+        self._wait_torque_done(timeout_s, require_motion_start=require_motion_start)
 
     def start_collect(self):
         self._stop_event.clear()
@@ -515,6 +562,7 @@ class CollectorUI(QtWidgets.QMainWindow):
                 self._move_axis_checked(1, theta1, params["point_timeout"])
 
                 # 2) 力矩电机下压
+                self._wait_force_zero_cooldown_before_motion("下压")
                 self.torque.precise_push(
                     params["force_n"],
                     params["push_dist"],
@@ -522,7 +570,13 @@ class CollectorUI(QtWidgets.QMainWindow):
                     params["force_band"],
                     int(params["chk_ms"]),
                 )
-                self._wait_torque_done(params["point_timeout"], require_motion_start=True)
+                self._wait_torque_force_ready(
+                    timeout_s=params["point_timeout"],
+                    target_force_n=params["force_n"],
+                    force_band_n=params["force_band"],
+                    stable_ms=int(params["chk_ms"]),
+                    require_motion_start=True,
+                )
 
                 # 3) 静态采样
                 frames = self._collect_array_frames(params["static_frames"], timeout_s=params["point_timeout"])
@@ -547,8 +601,7 @@ class CollectorUI(QtWidgets.QMainWindow):
                 )
 
                 # 5) 力矩电机回原点，准备下一点
-                self.torque.home(0)
-                self._wait_torque_done(params["point_timeout"])
+                self._home_torque_only(timeout_s=params["point_timeout"])
 
             self.sig_log.emit(f"采集结束：完成点数 {done}/{total}")
             self.sig_log.emit(f"输出目录：{out_root}")
@@ -573,8 +626,7 @@ class CollectorUI(QtWidgets.QMainWindow):
         if self._stop_event.is_set():
             raise RuntimeError("用户停止")
         self.sig_log.emit("[预处理] 力矩电机回原点...")
-        self.torque.home(0)
-        self._wait_torque_done(20.0, require_motion_start=True)
+        self._home_torque_only(timeout_s=20.0, require_motion_start=True)
         self.sig_log.emit("采集前回零完成")
 
     def _read_params(self) -> Dict:
@@ -650,6 +702,52 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.torque.stop(0)
         raise RuntimeError("力矩电机等待超时")
 
+    def _wait_torque_force_ready(
+        self,
+        timeout_s: float,
+        target_force_n: float,
+        force_band_n: float,
+        stable_ms: int,
+        require_motion_start: bool = False,
+    ):
+        t0 = time.time()
+        seen_motion = False
+        dt = 0.05
+        need_stable_count = max(1, int(stable_ms / (dt * 1000.0)))
+        stable_force_count = 0
+
+        while time.time() - t0 < timeout_s:
+            if self._stop_event.is_set():
+                self.torque.stop(0)
+                raise RuntimeError("用户停止")
+
+            st = self.torque.read_status()
+            pos = float(st["position"])
+            vel = abs(float(st["velocity"]))
+            force = float(st["force"])
+            moving = bool(st.get("moving", False))
+
+            if moving or vel >= 0.01:
+                seen_motion = True
+
+            if require_motion_start and not seen_motion:
+                stable_force_count = 0
+                time.sleep(dt)
+                continue
+
+            if np.isfinite(force) and abs(force - target_force_n) <= force_band_n:
+                stable_force_count += 1
+            else:
+                stable_force_count = 0
+
+            if stable_force_count >= need_stable_count:
+                return
+
+            time.sleep(dt)
+
+        self.torque.stop(0)
+        raise RuntimeError("力矩电机未在超时时间内达到目标力稳定条件")
+
     def _collect_array_frames(self, n_frames: int, timeout_s: float) -> List[Dict]:
         collected: List[Dict] = []
         t0 = time.time()
@@ -668,9 +766,27 @@ class CollectorUI(QtWidgets.QMainWindow):
             collected.extend(frames[:need])
         return collected
 
+    @QtCore.pyqtSlot()
+    def _refresh_torque_status(self):
+        if not self.torque:
+            self.torque_status_label.setText("力矩电机状态：未连接")
+            return
+        try:
+            st = self.torque.read_status()
+            self.torque_status_label.setText(
+                f"力矩电机：位置={st['position']:.3f} mm | 速度={st['velocity']:.3f} mm/s | 力={st['force']:.3f} N"
+            )
+        except Exception as e:
+            self.torque_status_label.setText(f"力矩电机状态刷新失败：{e}")
+
     def closeEvent(self, event):
         self._stop_event.set()
         self._preview_running = False
+        try:
+            if self._torque_status_timer:
+                self._torque_status_timer.stop()
+        except Exception:
+            pass
         try:
             if self._worker and self._worker.is_alive():
                 self._worker.join(timeout=1.5)
