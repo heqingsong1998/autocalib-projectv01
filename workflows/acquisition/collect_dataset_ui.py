@@ -314,7 +314,13 @@ class CollectorUI(QtWidgets.QMainWindow):
             if self._worker and self._worker.is_alive():
                 self.sig_log.emit("当前有任务执行中，请先停止或等待完成")
                 return
-            self._worker = threading.Thread(target=fn, daemon=True)
+            def _safe_runner():
+                try:
+                    fn()
+                except Exception as e:
+                    self.sig_log.emit(f"任务异常: {e}")
+
+            self._worker = threading.Thread(target=_safe_runner, daemon=True)
             self._worker.start()
 
     def _array_preview_loop(self):
@@ -440,6 +446,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
 
     def home_axes(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._home_axes_impl)
 
     def _home_axes_impl(self):
@@ -460,6 +468,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.sig_log.emit("轴0/1回原点完成")
 
     def home_torque(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._home_torque_impl)
 
     def _home_torque_impl(self):
@@ -470,6 +480,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.sig_log.emit("力矩电机回原点完成")
 
     def zero_torque_force(self):
+        # stop_collect 后允许手动动作继续执行
+        self._stop_event.clear()
         self._run_bg(self._zero_torque_force_impl)
 
     def _zero_torque_force_impl(self):
