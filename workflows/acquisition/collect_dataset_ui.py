@@ -127,6 +127,7 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.array_3d_dialog: Optional[ArraySensor3DDialog] = None
         self._last_torque_force_zero_ts: float = 0.0
         self._torque_force_zero_cooldown_s: float = 0.5
+        self._torque_retract_step_mm: float = 1.0
 
         self._worker: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -537,6 +538,15 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.torque.home(0)
         self._wait_torque_done(timeout_s, require_motion_start=require_motion_start)
 
+    def _retract_torque_step(self, timeout_s: float, step_mm: Optional[float] = None):
+        dist = float(step_mm if step_mm is not None else self._torque_retract_step_mm)
+        if dist <= 0:
+            raise ValueError("回退步长必须大于0")
+        self._wait_force_zero_cooldown_before_motion("回退")
+        self.torque.move_rel(0, -dist)
+        self._wait_torque_done(timeout_s, require_motion_start=True)
+        self.sig_log.emit(f"力矩电机回退完成：{-dist:.3f} mm")
+
     def start_collect(self):
         self._stop_event.clear()
         self._run_bg(self._collect_impl)
@@ -581,8 +591,13 @@ class CollectorUI(QtWidgets.QMainWindow):
 
         done = 0
         sample_idx = 1
+        zero_interval = max(1, total // 4)
+        self.sig_log.emit(f"力清零策略：开始1次 + 每{zero_interval}点1次 + 结束1次")
 
         try:
+            # 采集开始前先做一次力清零
+            self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
+
             for theta0, theta1 in points:
                 if self._stop_event.is_set():
                     self.sig_log.emit("采集被用户停止")
@@ -594,7 +609,6 @@ class CollectorUI(QtWidgets.QMainWindow):
 
                 # 2) 力矩电机下压
                 start_pos = self.torque.get_position(0)
-                self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
                 self._wait_force_zero_cooldown_before_motion("下压")
                 self.torque.precise_push(
                     params["force_n"],
@@ -635,8 +649,18 @@ class CollectorUI(QtWidgets.QMainWindow):
                     f"✅ 完成 {done}/{total}: ({theta0:+.3f},{theta1:+.3f}) -> {rec.sample_path}"
                 )
 
-                # 5) 力矩电机回原点，准备下一点
-                self._home_torque_only(timeout_s=params["point_timeout"])
+                # 5) 力矩电机回退 1mm，准备下一点
+                self._retract_torque_step(timeout_s=params["point_timeout"], step_mm=1.0)
+
+                # 6) 采集中按总样本 1/4 间隔执行力清零（不在最后一个点重复）
+                if done < total and done % zero_interval == 0:
+                    self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
+
+            if done == total and not self._stop_event.is_set():
+                self.sig_log.emit("全部点采集完成，执行收尾回零：力矩电机 -> 轴0/轴1")
+                self._home_torque_only(timeout_s=30.0, require_motion_start=True)
+                self._home_axes_impl()
+                self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
 
             self.sig_log.emit(f"采集结束：完成点数 {done}/{total}")
             self.sig_log.emit(f"输出目录：{out_root}")
@@ -767,21 +791,20 @@ class CollectorUI(QtWidgets.QMainWindow):
             if moving or vel >= 0.01:
                 seen_motion = True
 
-            if require_motion_start and not seen_motion:
-                stable_force_count = 0
-                time.sleep(dt)
-                continue
-
             if np.isfinite(force) and abs(force - target_force_n) <= force_band_n:
                 stable_force_count += 1
-            else:
-                stable_force_count = 0
 
             if stable_force_count >= need_stable_count:
                 self.sig_log.emit(
                     f"力达到阈值并稳定：F={force:.3f}N, pos={pos:.3f}mm"
                 )
                 return
+
+            # 在某些工况下命令发出后电机位移/速度变化很小，但力已接近目标。
+            # 若尚未检测到明显运动，仅阻止“最大行程”分支，不阻止“力达标”分支。
+            if require_motion_start and not seen_motion:
+                time.sleep(dt)
+                continue
 
             travel = abs(pos - start_pos_mm)
             if np.isfinite(travel) and travel >= max(0.0, max_travel_mm - 0.05):
