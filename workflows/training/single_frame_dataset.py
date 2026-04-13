@@ -30,10 +30,10 @@ def _collect_npz_files(dataset_root: Path) -> List[Path]:
 def load_frame_dataset(
     dataset_root: str,
     use_raw: bool = True,
-    use_relative: bool = True,
-    use_force: bool = True,
-    use_pressure: bool = True,
-    use_temp: bool = True,
+    use_relative: bool = False,
+    use_force: bool = False,
+    use_pressure: bool = False,
+    use_temp: bool = False,
 ) -> FrameDataset:
     root = Path(dataset_root)
     files = _collect_npz_files(root)
