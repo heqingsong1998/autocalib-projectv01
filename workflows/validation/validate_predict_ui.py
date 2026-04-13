@@ -47,10 +47,10 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         self.model: Optional[SingleFrameMLP] = None
         self.feature_flags: Dict[str, bool] = {
             "use_raw": True,
-            "use_relative": True,
-            "use_force": True,
-            "use_pressure": True,
-            "use_temp": True,
+            "use_relative": False,
+            "use_force": False,
+            "use_pressure": False,
+            "use_temp": False,
         }
         self.model_path_default = self.cfg.get("validation", {}).get(
             "single_frame_model",

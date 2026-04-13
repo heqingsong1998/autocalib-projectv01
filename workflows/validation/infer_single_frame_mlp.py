@@ -9,25 +9,48 @@ import numpy as np
 class SingleFrameMLP:
     def __init__(self, model_path: str):
         m = np.load(model_path, allow_pickle=False)
-        self.w1 = np.asarray(m["w1"], dtype=np.float32)
-        self.b1 = np.asarray(m["b1"], dtype=np.float32)
-        self.w2 = np.asarray(m["w2"], dtype=np.float32)
-        self.b2 = np.asarray(m["b2"], dtype=np.float32)
+        self.is_two_stage = all(
+            k in m for k in ("coarse_w1", "coarse_b1", "coarse_w2", "coarse_b2", "fine_w1", "fine_b1", "fine_w2", "fine_b2")
+        )
+        if self.is_two_stage:
+            self.coarse_w1 = np.asarray(m["coarse_w1"], dtype=np.float32)
+            self.coarse_b1 = np.asarray(m["coarse_b1"], dtype=np.float32)
+            self.coarse_w2 = np.asarray(m["coarse_w2"], dtype=np.float32)
+            self.coarse_b2 = np.asarray(m["coarse_b2"], dtype=np.float32)
+            self.fine_w1 = np.asarray(m["fine_w1"], dtype=np.float32)
+            self.fine_b1 = np.asarray(m["fine_b1"], dtype=np.float32)
+            self.fine_w2 = np.asarray(m["fine_w2"], dtype=np.float32)
+            self.fine_b2 = np.asarray(m["fine_b2"], dtype=np.float32)
+        else:
+            self.w1 = np.asarray(m["w1"], dtype=np.float32)
+            self.b1 = np.asarray(m["b1"], dtype=np.float32)
+            self.w2 = np.asarray(m["w2"], dtype=np.float32)
+            self.b2 = np.asarray(m["b2"], dtype=np.float32)
         self.x_mean = np.asarray(m["x_mean"], dtype=np.float32)
         self.x_std = np.asarray(m["x_std"], dtype=np.float32)
         self.y_mean = np.asarray(m["y_mean"], dtype=np.float32)
         self.y_std = np.asarray(m["y_std"], dtype=np.float32)
 
-    def _forward(self, x: np.ndarray) -> np.ndarray:
-        z1 = x @ self.w1 + self.b1
+    @staticmethod
+    def _forward(x: np.ndarray, w1: np.ndarray, b1: np.ndarray, w2: np.ndarray, b2: np.ndarray) -> np.ndarray:
+        z1 = x @ w1 + b1
         a1 = np.maximum(z1, 0.0)
-        y = a1 @ self.w2 + self.b2
+        y = a1 @ w2 + b2
         return y
 
     def predict(self, frame_feature: np.ndarray) -> np.ndarray:
         x = np.asarray(frame_feature, dtype=np.float32).reshape(1, -1)
         x_n = (x - self.x_mean) / self.x_std
-        y_n = self._forward(x_n)
+        if self.is_two_stage:
+            coarse_y_n = self._forward(
+                x_n, self.coarse_w1, self.coarse_b1, self.coarse_w2, self.coarse_b2
+            )
+            fine_x_n = np.concatenate([x_n, coarse_y_n], axis=1)
+            y_n = self._forward(
+                fine_x_n, self.fine_w1, self.fine_b1, self.fine_w2, self.fine_b2
+            )
+        else:
+            y_n = self._forward(x_n, self.w1, self.b1, self.w2, self.b2)
         y = y_n * self.y_std + self.y_mean
         return y[0]
 
@@ -35,10 +58,10 @@ class SingleFrameMLP:
 def build_feature_from_frame(
     frame: Dict,
     use_raw: bool = True,
-    use_relative: bool = True,
-    use_force: bool = True,
-    use_pressure: bool = True,
-    use_temp: bool = True,
+    use_relative: bool = False,
+    use_force: bool = False,
+    use_pressure: bool = False,
+    use_temp: bool = False,
 ) -> np.ndarray:
     blocks = []
     if use_raw:
