@@ -642,6 +642,9 @@ class CollectorUI(QtWidgets.QMainWindow):
                     frames=frames,
                 )
 
+                # 每个样本点完成后执行一次阵列传感器清零，减少零点漂移累积。
+                self._zero_array_sensor_impl()
+
                 sample_idx += 1
                 done += 1
                 self.sig_progress.emit(done, total)
@@ -840,14 +843,14 @@ class CollectorUI(QtWidgets.QMainWindow):
     def _refresh_torque_status(self):
         if not self.torque:
             self.torque_status_label.setText("力矩电机状态：未连接")
-            return
-        try:
-            st = self.torque.read_status()
-            self.torque_status_label.setText(
-                f"力矩电机：位置={st['position']:.3f} mm | 速度={st['velocity']:.3f} mm/s | 力={st['force']:.3f} N"
-            )
-        except Exception as e:
-            self.torque_status_label.setText(f"力矩电机状态刷新失败：{e}")
+        else:
+            try:
+                st = self.torque.read_status()
+                self.torque_status_label.setText(
+                    f"力矩电机：位置={st['position']:.3f} mm | 速度={st['velocity']:.3f} mm/s | 力={st['force']:.3f} N"
+                )
+            except Exception as e:
+                self.torque_status_label.setText(f"力矩电机状态刷新失败：{e}")
 
     def closeEvent(self, event):
         self._stop_event.set()

@@ -1,14 +1,9 @@
-"""验证层入口占位文件。
+"""验证模块入口。
 
-后续可在此处放置：
-- 模型加载
-- 随机角度下发
-- 在线推理与误差统计
+转发到在线验证 UI（随机角度复测 + 模型预测）。
 """
 
-
-def main():
-    print("[TODO] 验证模块入口：workflows/validation/validate_ui_stub.py")
+from workflows.validation.validate_predict_ui import main
 
 
 if __name__ == "__main__":

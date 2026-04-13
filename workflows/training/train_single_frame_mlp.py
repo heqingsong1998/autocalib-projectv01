@@ -8,7 +8,13 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from .single_frame_dataset import load_frame_dataset, train_val_split
+try:
+    from .single_frame_dataset import load_frame_dataset, train_val_split
+except ImportError:
+    # 兼容直接以脚本方式运行: python workflows/training/train_single_frame_mlp.py
+    from single_frame_dataset import load_frame_dataset, train_val_split
+
+DEFAULT_DATASET_ROOT = "datasets/collect_20260413_113237"
 
 
 @dataclass
@@ -179,7 +185,11 @@ def run_train(args: argparse.Namespace) -> None:
 
 def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="单帧展开训练：2层MLP回归(theta0, theta1)")
-    p.add_argument("--dataset-root", required=True, help="数据集根目录（可为 datasets 或单个 run 目录）")
+    p.add_argument(
+        "--dataset-root",
+        default=DEFAULT_DATASET_ROOT,
+        help="数据集根目录（可为 datasets 或单个 run 目录），默认使用当前采集目录",
+    )
     p.add_argument("--output-dir", default="workflows/training/artifacts", help="模型输出目录")
 
     p.add_argument("--epochs", type=int, default=300)
