@@ -128,6 +128,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         self._last_torque_force_zero_ts: float = 0.0
         self._torque_force_zero_cooldown_s: float = 0.5
         self._torque_retract_step_mm: float = 1.0
+        self._last_3d_refresh_ts: float = 0.0
+        self._collect_3d_refresh_interval_s: float = 0.25
 
         self._worker: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -192,7 +194,7 @@ class CollectorUI(QtWidgets.QMainWindow):
         self.push_dist = QtWidgets.QDoubleSpinBox()
         self.push_dist.setRange(0.1, 100.0)
         self.push_dist.setDecimals(3)
-        self.push_dist.setValue(8.0)
+        self.push_dist.setValue(50.0)
         self.push_dist.setSuffix(" mm")
 
         self.push_vel = QtWidgets.QDoubleSpinBox()
@@ -214,7 +216,11 @@ class CollectorUI(QtWidgets.QMainWindow):
 
         self.static_frames = QtWidgets.QSpinBox()
         self.static_frames.setRange(1, 500)
-        self.static_frames.setValue(20)
+        self.static_frames.setValue(50)
+
+        self.repeat_presses = QtWidgets.QSpinBox()
+        self.repeat_presses.setRange(1, 50)
+        self.repeat_presses.setValue(10)
 
         self.axis0_min = QtWidgets.QDoubleSpinBox()
         self.axis0_min.setRange(-180.0, 180.0)
@@ -246,7 +252,7 @@ class CollectorUI(QtWidgets.QMainWindow):
 
         self.point_timeout = QtWidgets.QDoubleSpinBox()
         self.point_timeout.setRange(1.0, 60.0)
-        self.point_timeout.setValue(15.0)
+        self.point_timeout.setValue(50.0)
         self.point_timeout.setSuffix(" s")
 
         self.output_dir = QtWidgets.QLineEdit(DATASET_ROOT)
@@ -264,8 +270,12 @@ class CollectorUI(QtWidgets.QMainWindow):
         grid.addWidget(self.force_band, r, 1)
         grid.addWidget(QtWidgets.QLabel("判稳时间"), r, 2)
         grid.addWidget(self.chk_ms, r, 3)
-        grid.addWidget(QtWidgets.QLabel("静态采集帧数"), r, 4)
+        grid.addWidget(QtWidgets.QLabel("每次按压采样帧数"), r, 4)
         grid.addWidget(self.static_frames, r, 5)
+
+        r += 1
+        grid.addWidget(QtWidgets.QLabel("每标签重复按压次数"), r, 0)
+        grid.addWidget(self.repeat_presses, r, 1)
 
         r += 1
         grid.addWidget(QtWidgets.QLabel("轴0范围"), r, 0)
@@ -355,6 +365,15 @@ class CollectorUI(QtWidgets.QMainWindow):
     def _set_last_array_frame(self, frame: Optional[Dict]):
         with self._array_frame_lock:
             self._last_array_frame = frame
+
+    def _refresh_array_3d_throttled(self, force: bool = False):
+        if not (self.array_3d_dialog and self.array_3d_dialog.isVisible()):
+            return
+        now = time.time()
+        if (not force) and (now - self._last_3d_refresh_ts < self._collect_3d_refresh_interval_s):
+            return
+        self._last_3d_refresh_ts = now
+        QtCore.QMetaObject.invokeMethod(self, "_refresh_array_3d_on_ui", QtCore.Qt.QueuedConnection)
 
     def _get_last_array_frame(self) -> Optional[Dict]:
         with self._array_frame_lock:
@@ -575,7 +594,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         axis0_vals = frange(params["axis0_min"], params["axis0_max"], params["step_deg"])
         axis1_vals = frange(params["axis1_min"], params["axis1_max"], params["step_deg"])
         points = [(a0, a1) for a0 in axis0_vals for a1 in axis1_vals]
-        total = len(points)
+        total_points = len(points)
+        total_samples = total_points * params["repeat_presses"]
 
         run_id = make_run_id("collect")
         out_root = os.path.join(params["output_dir"], run_id)
@@ -587,12 +607,15 @@ class CollectorUI(QtWidgets.QMainWindow):
             run_meta=build_run_meta(self.cfg, params),
         )
 
-        self.sig_log.emit(f"开始采集，run_id={run_id}, 总点数={total}")
+        self.sig_log.emit(
+            f"开始采集，run_id={run_id}, 标签点数={total_points}, "
+            f"每标签重复按压={params['repeat_presses']}次, 总样本数={total_samples}"
+        )
 
         done = 0
         sample_idx = 1
-        zero_interval = max(1, total // 4)
-        self.sig_log.emit(f"力清零策略：开始1次 + 每{zero_interval}点1次 + 结束1次")
+        zero_interval = max(1, total_samples // 4)
+        self.sig_log.emit(f"力清零策略：开始1次 + 每{zero_interval}样本1次 + 结束1次")
 
         try:
             # 采集开始前先做一次力清零
@@ -603,69 +626,75 @@ class CollectorUI(QtWidgets.QMainWindow):
                     self.sig_log.emit("采集被用户停止")
                     break
 
-                # 1) 平台角度运动
+                # 1) 平台角度运动（每个标签点执行一次）
                 self._move_axis_checked(0, theta0, params["point_timeout"])
                 self._move_axis_checked(1, theta1, params["point_timeout"])
 
-                # 2) 力矩电机下压
-                start_pos = self.torque.get_position(0)
-                self._wait_force_zero_cooldown_before_motion("下压")
-                self.torque.precise_push(
-                    params["force_n"],
-                    params["push_dist"],
-                    params["push_vel"],
-                    params["force_band"],
-                    int(params["chk_ms"]),
-                )
-                self._wait_torque_force_ready(
-                    timeout_s=params["point_timeout"],
-                    target_force_n=params["force_n"],
-                    force_band_n=params["force_band"],
-                    stable_ms=int(params["chk_ms"]),
-                    start_pos_mm=start_pos,
-                    max_travel_mm=params["push_dist"],
-                    require_motion_start=True,
-                )
+                # 2) 同一标签重复按压采样，增加标签内多样性
+                for rep in range(1, params["repeat_presses"] + 1):
+                    if self._stop_event.is_set():
+                        self.sig_log.emit("采集被用户停止")
+                        break
 
-                # 3) 静态采样
-                frames = self._collect_array_frames(params["static_frames"], timeout_s=params["point_timeout"])
-                if len(frames) < params["static_frames"]:
-                    raise RuntimeError(
-                        f"点({theta0},{theta1})采样帧不足: {len(frames)}/{params['static_frames']}"
+                    # 力矩电机下压
+                    start_pos = self.torque.get_position(0)
+                    self._wait_force_zero_cooldown_before_motion("下压")
+                    self.torque.precise_push(
+                        params["force_n"],
+                        params["push_dist"],
+                        params["push_vel"],
+                        params["force_band"],
+                        int(params["chk_ms"]),
+                    )
+                    self._wait_torque_force_ready(
+                        timeout_s=params["point_timeout"],
+                        target_force_n=params["force_n"],
+                        force_band_n=params["force_band"],
+                        stable_ms=int(params["chk_ms"]),
+                        start_pos_mm=start_pos,
+                        max_travel_mm=params["push_dist"],
+                        require_motion_start=True,
                     )
 
-                # 4) 单样本保存
-                rec = writer.save_sample(
-                    sample_idx=sample_idx,
-                    theta0_cmd_deg=theta0,
-                    theta1_cmd_deg=theta1,
-                    frames=frames,
-                )
+                    # 静态采样
+                    frames = self._collect_array_frames(params["static_frames"], timeout_s=params["point_timeout"])
+                    if len(frames) < params["static_frames"]:
+                        raise RuntimeError(
+                            f"点({theta0},{theta1})第{rep}次采样帧不足: {len(frames)}/{params['static_frames']}"
+                        )
 
-                # 每个样本点完成后执行一次阵列传感器清零，减少零点漂移累积。
-                self._zero_array_sensor_impl()
+                    # 单样本保存
+                    rec = writer.save_sample(
+                        sample_idx=sample_idx,
+                        theta0_cmd_deg=theta0,
+                        theta1_cmd_deg=theta1,
+                        frames=frames,
+                    )
 
-                sample_idx += 1
-                done += 1
-                self.sig_progress.emit(done, total)
-                self.sig_log.emit(
-                    f"✅ 完成 {done}/{total}: ({theta0:+.3f},{theta1:+.3f}) -> {rec.sample_path}"
-                )
+                    # 每个样本完成后执行一次阵列传感器清零，减少零点漂移累积。
+                    self._zero_array_sensor_impl()
 
-                # 5) 力矩电机回退 1mm，准备下一点
-                self._retract_torque_step(timeout_s=params["point_timeout"], step_mm=1.0)
+                    sample_idx += 1
+                    done += 1
+                    self.sig_progress.emit(done, total_samples)
+                    self.sig_log.emit(
+                        f"✅ 完成 {done}/{total_samples}: ({theta0:+.3f},{theta1:+.3f}) 第{rep}/{params['repeat_presses']}次 -> {rec.sample_path}"
+                    )
 
-                # 6) 采集中按总样本 1/4 间隔执行力清零（不在最后一个点重复）
-                if done < total and done % zero_interval == 0:
-                    self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
+                    # 力矩电机回退 1mm，准备下一次按压
+                    self._retract_torque_step(timeout_s=params["point_timeout"], step_mm=1.0)
 
-            if done == total and not self._stop_event.is_set():
+                    # 采集中按总样本 1/4 间隔执行力清零（不在最后一个样本重复）
+                    if done < total_samples and done % zero_interval == 0:
+                        self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
+
+            if done == total_samples and not self._stop_event.is_set():
                 self.sig_log.emit("全部点采集完成，执行收尾回零：力矩电机 -> 轴0/轴1")
                 self._home_torque_only(timeout_s=30.0, require_motion_start=True)
                 self._home_axes_impl()
                 self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
 
-            self.sig_log.emit(f"采集结束：完成点数 {done}/{total}")
+            self.sig_log.emit(f"采集结束：完成样本数 {done}/{total_samples}")
             self.sig_log.emit(f"输出目录：{out_root}")
 
         except Exception as e:
@@ -699,6 +728,7 @@ class CollectorUI(QtWidgets.QMainWindow):
             "force_band": float(self.force_band.value()),
             "chk_ms": int(self.chk_ms.value()),
             "static_frames": int(self.static_frames.value()),
+            "repeat_presses": int(self.repeat_presses.value()),
             "axis0_min": float(self.axis0_min.value()),
             "axis0_max": float(self.axis0_max.value()),
             "axis1_min": float(self.axis1_min.value()),
@@ -835,8 +865,10 @@ class CollectorUI(QtWidgets.QMainWindow):
                 time.sleep(0.001)
                 continue
             self._set_last_array_frame(frames[-1])
+            self._refresh_array_3d_throttled(force=False)
             need = n_frames - len(collected)
             collected.extend(frames[:need])
+        self._refresh_array_3d_throttled(force=True)
         return collected
 
     @QtCore.pyqtSlot()

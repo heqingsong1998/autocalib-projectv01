@@ -1,17 +1,23 @@
 {
-  "dataset_root": "D:\\songmaozheng\\autocalib-projectv01\\datasets\\collect_20260413_113237",
-  "n_total_frames": 8820,
-  "n_train_frames": 7060,
-  "n_val_frames": 1760,
-  "n_source_samples": 441,
-  "input_dim": 136,
-  "hidden_dim": 128,
+  "dataset_root": "D:\\songmaozheng\\autocalib-projectv01\\datasets\\collect_20260414_095702",
+  "n_total_frames": 110250,
+  "n_train_frames": 88200,
+  "n_val_frames": 22050,
+  "n_source_samples": 2205,
+  "input_dim": 64,
+  "model_type": "residual_mlp_v1",
+  "hidden_dim1": 256,
+  "hidden_dim2": 256,
+  "epochs": 500,
+  "huber_delta": 1.0,
+  "weight_decay": 0.0001,
+  "early_stop_patience": 50,
   "feature_flags": {
     "use_raw": true,
-    "use_relative": true,
-    "use_force": true,
-    "use_pressure": true,
-    "use_temp": true
+    "use_relative": false,
+    "use_force": false,
+    "use_pressure": false,
+    "use_temp": false
   },
   "split_by_sample": true
 }

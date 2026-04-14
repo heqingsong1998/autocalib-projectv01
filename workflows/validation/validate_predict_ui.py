@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import yaml
 from PyQt5 import QtCore, QtWidgets
+import pyqtgraph.opengl as gl
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
@@ -23,11 +24,82 @@ from workflows.validation.infer_single_frame_mlp import SingleFrameMLP, build_fe
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "default.yaml")
+PREDICT_AVG_FRAMES = 50
+CMD_STEP_DEG = 0.1
 
 
 def load_cfg() -> Dict:
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+class ArraySensor3DDialog(QtWidgets.QDialog):
+    def __init__(self, sensor_cfg: Dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("阵列传感器3D视图")
+        self.resize(960, 700)
+
+        self.mapping = np.asarray(sensor_cfg["processing"]["mapping"], dtype=int)
+
+        root = QtWidgets.QVBoxLayout(self)
+        self.view = gl.GLViewWidget()
+        self.view.opts["distance"] = 25
+        self.view.setBackgroundColor("k")
+        root.addWidget(self.view)
+
+        self._init_3d_items()
+
+    def _init_3d_items(self):
+        grid = gl.GLGridItem()
+        grid.scale(1, 1, 1)
+        self.view.addItem(grid)
+
+        axis = gl.GLAxisItem()
+        axis.setSize(10, 10, 10)
+        self.view.addItem(axis)
+
+        self.color_row = np.array([
+            (54, 34, 159, 0.5), (76, 81, 255, 0.5), (34, 139, 244, 0.5), (10, 181, 224, 0.5),
+            (41, 207, 157, 0.5), (168, 193, 47, 0.5), (255, 200, 53, 0.5), (255, 253, 24, 0.5),
+        ]) / 255
+        self.faces = np.array([
+            [0, 1, 3], [0, 2, 3], [0, 1, 5], [0, 4, 5], [0, 2, 6], [0, 4, 6],
+            [4, 5, 7], [4, 6, 7], [2, 3, 7], [2, 6, 7], [1, 3, 7], [1, 5, 7],
+        ])
+
+        self.vertexes = np.zeros((64, 8, 3), dtype=float)
+        self.meshes = []
+        for i in range(64):
+            row, col = i // 8, i % 8
+            self.vertexes[i, :4, :] = [
+                (row, col, 0),
+                (row, col + 0.8, 0),
+                (row + 0.8, col, 0),
+                (row + 0.8, col + 0.8, 0),
+            ]
+            self.vertexes[i, 4:, :] = self.vertexes[i, :4, :]
+            colors = np.array([self.color_row[row] for _ in range(12)])
+            mesh = gl.GLMeshItem(vertexes=self.vertexes[i], faces=self.faces, faceColors=colors, drawEdges=True)
+            self.view.addItem(mesh)
+            self.meshes.append(mesh)
+
+    def update_from_frame(self, frame: Dict, zero_reference: np.ndarray):
+        rel = (np.asarray(frame["raw"], dtype=float) - zero_reference) / 100.0
+        for i in range(64):
+            row, col = i // 8, i % 8
+            sensor_index = self.mapping[row, col]
+            h = rel[sensor_index]
+            self.vertexes[i, 4:, :] = [
+                (row, col, h),
+                (row, col + 0.8, h),
+                (row + 0.8, col, h),
+                (row + 0.8, col + 0.8, h),
+            ]
+            self.meshes[i].setMeshData(
+                vertexes=self.vertexes[i],
+                faces=self.faces,
+                faceColors=np.array([self.color_row[row]] * 12),
+            )
 
 
 class ValidationPredictUI(QtWidgets.QMainWindow):
@@ -43,6 +115,8 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         self.motion: Optional[LTSMCMotionCard] = None
         self.torque: Optional[TorqueMotorCard] = None
         self.array_sensor = None
+        self.array_3d_dialog: Optional[ArraySensor3DDialog] = None
+        self._zero_reference_ui = np.zeros(64, dtype=float)
 
         self.model: Optional[SingleFrameMLP] = None
         self.feature_flags: Dict[str, bool] = {
@@ -62,6 +136,8 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         self._worker: Optional[threading.Thread] = None
         self._busy_lock = threading.Lock()
         self._stop_event = threading.Event()
+        self._last_3d_refresh_ts = 0.0
+        self._3d_refresh_interval_s = 0.25
 
         self._status_timer = QtCore.QTimer(self)
         self._status_timer.timeout.connect(self._refresh_status)
@@ -79,10 +155,16 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         btn_row = QtWidgets.QHBoxLayout()
         self.btn_connect = QtWidgets.QPushButton("连接设备")
         self.btn_connect.clicked.connect(self.connect_all)
+        self.btn_zero_sensor = QtWidgets.QPushButton("阵列传感器清零")
+        self.btn_zero_sensor.clicked.connect(self.zero_array_sensor)
+        self.btn_show_3d = QtWidgets.QPushButton("显示3D图像")
+        self.btn_show_3d.clicked.connect(self.show_array_3d)
         self.btn_home_axes = QtWidgets.QPushButton("轴0/轴1回原点")
         self.btn_home_axes.clicked.connect(self.home_axes)
         self.btn_home_torque = QtWidgets.QPushButton("力矩电机回原点")
         self.btn_home_torque.clicked.connect(self.home_torque)
+        self.btn_zero_torque_force = QtWidgets.QPushButton("力矩电机力清零")
+        self.btn_zero_torque_force.clicked.connect(self.zero_torque_force)
         self.btn_load_model = QtWidgets.QPushButton("加载模型")
         self.btn_load_model.clicked.connect(self.load_model)
         self.btn_oneclick = QtWidgets.QPushButton("一键预测（随机30组）")
@@ -93,8 +175,11 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         for b in (
             self.btn_connect,
+            self.btn_zero_sensor,
+            self.btn_show_3d,
             self.btn_home_axes,
             self.btn_home_torque,
+            self.btn_zero_torque_force,
             self.btn_load_model,
             self.btn_oneclick,
             self.btn_stop,
@@ -134,7 +219,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         self.point_timeout = QtWidgets.QDoubleSpinBox()
         self.point_timeout.setRange(1.0, 120.0)
-        self.point_timeout.setValue(15.0)
+        self.point_timeout.setValue(50.0)
         self.point_timeout.setSuffix(" s")
 
         self.force_n = QtWidgets.QDoubleSpinBox()
@@ -146,7 +231,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         self.push_dist = QtWidgets.QDoubleSpinBox()
         self.push_dist.setRange(0.1, 100.0)
         self.push_dist.setDecimals(3)
-        self.push_dist.setValue(8.0)
+        self.push_dist.setValue(50.0)
         self.push_dist.setSuffix(" mm")
 
         self.push_vel = QtWidgets.QDoubleSpinBox()
@@ -250,6 +335,15 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         with self._array_lock:
             self._last_array_frame = frame
 
+    def _refresh_array_3d_throttled(self, force: bool = False):
+        if not (self.array_3d_dialog and self.array_3d_dialog.isVisible()):
+            return
+        now = time.time()
+        if (not force) and (now - self._last_3d_refresh_ts < self._3d_refresh_interval_s):
+            return
+        self._last_3d_refresh_ts = now
+        QtCore.QMetaObject.invokeMethod(self, "_refresh_array_3d_on_ui", QtCore.Qt.QueuedConnection)
+
     def _get_last_frame(self) -> Optional[Dict]:
         with self._array_lock:
             return self._last_array_frame
@@ -328,6 +422,76 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         self._wait_torque_done(timeout_s=20.0, require_motion_start=True)
         self.sig_log.emit("力矩电机回原点完成")
 
+    def zero_torque_force(self):
+        self._stop_event.clear()
+        self._run_bg(self._zero_torque_force_impl)
+
+    def _zero_torque_force_impl(self):
+        if not self.torque:
+            self.sig_log.emit("力矩电机未连接")
+            return
+        try:
+            self.torque.stop(0)
+        except Exception:
+            pass
+        self.torque.trigger_command(25)
+        self.sig_log.emit("已发送力清零（#25）")
+
+    def zero_array_sensor(self):
+        self._stop_event.clear()
+        self._run_bg(self._zero_array_sensor_impl)
+
+    def _zero_array_sensor_impl(self):
+        if not self.array_sensor:
+            self.sig_log.emit("阵列传感器未连接")
+            return
+        frame = self._read_latest_frame(timeout_s=2.0)
+        raw = frame.get("raw")
+        if raw is None:
+            raise RuntimeError("阵列帧缺少 raw，无法清零")
+        temp1 = float(frame.get("temp1", 0.0))
+        temp2 = float(frame.get("temp2", 0.0))
+        self._zero_reference_ui = np.asarray(raw, dtype=float).copy()
+        self.array_sensor.processor.zero(raw, temp1, temp2)
+        self._refresh_array_3d_throttled(force=True)
+        self.sig_log.emit("阵列传感器清零完成")
+
+    def show_array_3d(self):
+        self._stop_event.clear()
+        self._run_bg(self._show_array_3d_impl)
+
+    def _show_array_3d_impl(self):
+        if not self.array_sensor:
+            self.sig_log.emit("阵列传感器未连接")
+            return
+        frame = self._read_latest_frame(timeout_s=2.0)
+        self._set_last_frame(frame)
+        QtCore.QMetaObject.invokeMethod(self, "_show_array_3d_on_ui", QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
+    def _show_array_3d_on_ui(self):
+        frame = self._get_last_frame()
+        if frame is None:
+            self.sig_log.emit("暂无阵列数据，无法显示3D")
+            return
+
+        if self.array_3d_dialog is None:
+            sensor_cfg = self.cfg["sensor"]["array_sensor"]
+            self.array_3d_dialog = ArraySensor3DDialog(sensor_cfg, parent=self)
+
+        self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
+        self.array_3d_dialog.show()
+        self.array_3d_dialog.raise_()
+        self.array_3d_dialog.activateWindow()
+        self.sig_log.emit("3D图像已刷新")
+
+    @QtCore.pyqtSlot()
+    def _refresh_array_3d_on_ui(self):
+        frame = self._get_last_frame()
+        if frame is None or self.array_3d_dialog is None:
+            return
+        self.array_3d_dialog.update_from_frame(frame, self._zero_reference_ui)
+
     def start_one_click_predict(self):
         self._stop_event.clear()
         self._run_bg(self._one_click_predict_impl)
@@ -366,10 +530,12 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         p = self._read_params()
         rng = np.random.default_rng(int(time.time()))
+        axis0_candidates = self._build_step_candidates(p["axis0_min"], p["axis0_max"], CMD_STEP_DEG)
+        axis1_candidates = self._build_step_candidates(p["axis1_min"], p["axis1_max"], CMD_STEP_DEG)
         points = [
             (
-                float(rng.uniform(p["axis0_min"], p["axis0_max"])),
-                float(rng.uniform(p["axis1_min"], p["axis1_max"])),
+                float(axis0_candidates[int(rng.integers(0, len(axis0_candidates)))]),
+                float(axis1_candidates[int(rng.integers(0, len(axis1_candidates)))]),
             )
             for _ in range(p["count"])
         ]
@@ -411,16 +577,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
                 require_motion_start=True,
             )
 
-            frame = self._read_latest_frame(timeout_s=p["timeout"])
-            feat = build_feature_from_frame(
-                frame,
-                use_raw=self.feature_flags["use_raw"],
-                use_relative=self.feature_flags["use_relative"],
-                use_force=self.feature_flags["use_force"],
-                use_pressure=self.feature_flags["use_pressure"],
-                use_temp=self.feature_flags["use_temp"],
-            )
-            pred = self.model.predict(feat)
+            pred = self._predict_mean_over_frames(timeout_s=p["timeout"], n_frames=PREDICT_AVG_FRAMES)
 
             e0 = float(pred[0] - t0_cmd)
             e1 = float(pred[1] - t1_cmd)
@@ -428,7 +585,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             errs1.append(abs(e1))
 
             self.sig_log.emit(
-                f"[{idx:02d}/{len(points)}] cmd=({t0_cmd:+.3f},{t1_cmd:+.3f})°, "
+                f"[{idx:02d}/{len(points)}] cmd=({t0_cmd:+.1f},{t1_cmd:+.1f})°, "
                 f"pred=({pred[0]:+.3f},{pred[1]:+.3f})°, err=({e0:+.3f},{e1:+.3f})°"
             )
 
@@ -457,7 +614,9 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         temp1 = float(frame.get("temp1", 0.0))
         temp2 = float(frame.get("temp2", 0.0))
+        self._zero_reference_ui = np.asarray(raw, dtype=float).copy()
         self.array_sensor.processor.zero(raw, temp1, temp2)
+        self._refresh_array_3d_throttled(force=True)
         self.sig_log.emit("阵列传感器已清零（本组预测前）")
         time.sleep(0.15)
 
@@ -470,9 +629,66 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             frame = frames[-1] if frames else self.array_sensor.read_frame()
             if frame is not None:
                 self._set_last_frame(frame)
+                self._refresh_array_3d_throttled(force=False)
                 return frame
             time.sleep(0.01)
         raise RuntimeError("读取阵列传感器帧超时")
+
+    def _predict_mean_over_frames(self, timeout_s: float, n_frames: int = PREDICT_AVG_FRAMES) -> np.ndarray:
+        t0 = time.time()
+        preds: List[np.ndarray] = []
+        while len(preds) < n_frames and time.time() - t0 < timeout_s:
+            if self._stop_event.is_set():
+                raise RuntimeError("用户停止")
+
+            batch = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+            if batch:
+                need = n_frames - len(preds)
+                picked = batch[-need:]
+                self._set_last_frame(picked[-1])
+                self._refresh_array_3d_throttled(force=False)
+                for frame in picked:
+                    feat = build_feature_from_frame(
+                        frame,
+                        use_raw=self.feature_flags["use_raw"],
+                        use_relative=self.feature_flags["use_relative"],
+                        use_force=self.feature_flags["use_force"],
+                        use_pressure=self.feature_flags["use_pressure"],
+                        use_temp=self.feature_flags["use_temp"],
+                    )
+                    preds.append(self.model.predict(feat).astype(np.float32))
+                continue
+
+            frame = self.array_sensor.read_frame()
+            if frame is not None:
+                self._set_last_frame(frame)
+                self._refresh_array_3d_throttled(force=False)
+                feat = build_feature_from_frame(
+                    frame,
+                    use_raw=self.feature_flags["use_raw"],
+                    use_relative=self.feature_flags["use_relative"],
+                    use_force=self.feature_flags["use_force"],
+                    use_pressure=self.feature_flags["use_pressure"],
+                    use_temp=self.feature_flags["use_temp"],
+                )
+                preds.append(self.model.predict(feat).astype(np.float32))
+                continue
+
+            time.sleep(0.005)
+
+        if len(preds) < n_frames:
+            raise RuntimeError(f"平均预测次数不足: 需要{n_frames}次，实际{len(preds)}次")
+
+        return np.mean(np.stack(preds, axis=0), axis=0)
+
+    @staticmethod
+    def _build_step_candidates(min_deg: float, max_deg: float, step_deg: float) -> np.ndarray:
+        if step_deg <= 0:
+            raise ValueError("步进角必须大于0")
+        vals = np.arange(min_deg, max_deg + step_deg * 0.5, step_deg, dtype=np.float32)
+        if vals.size == 0:
+            return np.asarray([min_deg], dtype=np.float32)
+        return np.round(vals, 6)
 
     def _move_axis_checked(self, axis: int, target: float, timeout_s: float):
         self.motion.move_abs(axis, target)
@@ -573,11 +789,13 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def _refresh_status(self):
+        current_force = None
         if not self.torque:
             self.motor_status.setText("力矩电机状态：未连接")
         else:
             try:
                 st = self.torque.read_status()
+                current_force = float(st["force"])
                 self.motor_status.setText(
                     f"力矩电机：位置={st['position']:.3f} mm | 速度={st['velocity']:.3f} mm/s | 力={st['force']:.3f} N"
                 )
@@ -600,6 +818,20 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         if frame is None:
             self.pred_status.setText("在线预测：等待传感器帧")
+            return
+
+        self._refresh_array_3d_throttled(force=False)
+
+        # 实时状态预测仅在“接触有效”时显示，避免未下压工况造成外推漂移。
+        target_force = float(self.force_n.value())
+        force_band = float(self.force_band.value())
+        if current_force is None:
+            self.pred_status.setText("在线预测：等待力矩电机状态")
+            return
+        if abs(current_force - target_force) > force_band:
+            self.pred_status.setText(
+                f"在线预测：未进入有效接触工况（当前力={current_force:.3f}N，目标={target_force:.3f}±{force_band:.3f}N）"
+            )
             return
 
         try:
@@ -627,6 +859,12 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         try:
             if self._worker and self._worker.is_alive():
                 self._worker.join(timeout=1.5)
+        except Exception:
+            pass
+
+        try:
+            if self.array_3d_dialog:
+                self.array_3d_dialog.close()
         except Exception:
             pass
 
