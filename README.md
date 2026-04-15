@@ -97,6 +97,58 @@ ok = initialize_sensor(sensor)
 python apps/debug_array_sensor_3d.py
 ```
 
+### 5) 轴0/轴1 + 力矩电机 + 阵列传感器 数据集采集 UI
+
+```bash
+python workflows/acquisition/collect_dataset_ui.py
+```
+
+输出将写入 `datasets/<run_id>/`，包含：
+- `samples/sample_*.npz`（单点单文件，便于断点续采与训练读取）
+- `manifest.csv` / `manifest.jsonl`（索引与标签）
+- `run_meta.json`（参数快照）
+
+### 6) 训练（20帧展开为20条单帧样本）
+
+采集后可直接运行训练脚本（2层 MLP 回归 `theta0/theta1`）：
+
+```bash
+python -m workflows.training.train_single_frame_mlp \
+  --dataset-root datasets \
+  --output-dir workflows/training/artifacts
+```
+
+说明：
+- 脚本会把每个 `sample_xxxxxx.npz` 的多帧数据展开为多条单帧训练样本（同一角度标签）。
+- 默认按 `sample_id` 划分训练/验证集（避免同一采样点的帧泄漏到验证集）。
+- 训练产物：
+  - `workflows/training/artifacts/single_frame_mlp_model.npz`
+  - `workflows/training/artifacts/single_frame_mlp_meta.json`
+
+快速验证推理：
+
+```bash
+python -m workflows.training.infer_single_frame_mlp \
+  --model workflows/training/artifacts/single_frame_mlp_model.npz \
+  --sample-npz datasets/<run_id>/samples/sample_000001.npz
+```
+
+## 建议的三层目录（采集 / 训练 / 验证）
+
+```text
+workflows/
+├── acquisition/
+│   ├── collect_dataset_ui.py  # 采集UI（当前可用）
+│   └── dataset_writer.py      # 训练友好的样本落盘
+├── training/
+│   ├── train_ui_stub.py             # 训练入口（转发到训练脚本）
+│   ├── single_frame_dataset.py      # 读取样本并按帧展开
+│   ├── train_single_frame_mlp.py    # 2层MLP训练脚本
+│   └── infer_single_frame_mlp.py    # 推理与快速验证
+└── validation/
+    └── validate_ui_stub.py    # 验证层入口（占位）
+```
+
 ## 配置说明
 
 - `config/default.yaml` 中包含：
