@@ -133,11 +133,15 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
         self._last_array_frame: Optional[Dict] = None
         self._array_lock = threading.Lock()
+        self._sensor_io_lock = threading.Lock()
         self._worker: Optional[threading.Thread] = None
         self._busy_lock = threading.Lock()
         self._stop_event = threading.Event()
         self._last_3d_refresh_ts = 0.0
         self._3d_refresh_interval_s = 0.25
+        self._preview_running = True
+        self._preview_thread = threading.Thread(target=self._array_preview_loop, daemon=True)
+        self._preview_thread.start()
 
         self._status_timer = QtCore.QTimer(self)
         self._status_timer.timeout.connect(self._refresh_status)
@@ -331,6 +335,35 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             self._worker = threading.Thread(target=_runner, daemon=True)
             self._worker.start()
 
+    def _array_preview_loop(self):
+        while self._preview_running:
+            try:
+                if not self.array_sensor:
+                    time.sleep(0.20)
+                    continue
+
+                if not (self.array_3d_dialog and self.array_3d_dialog.isVisible()):
+                    time.sleep(0.15)
+                    continue
+
+                worker_busy = bool(self._worker and self._worker.is_alive())
+                if worker_busy:
+                    # 任务执行时低频读取单帧，尽量不干扰主流程。
+                    frame = self._sensor_read_frame()
+                else:
+                    frames = self._sensor_read_frames()
+                    frame = frames[-1] if frames else self._sensor_read_frame()
+
+                if frame is None:
+                    time.sleep(0.08 if worker_busy else 0.05)
+                    continue
+
+                self._set_last_frame(frame)
+                self._refresh_array_3d_throttled(force=False)
+                time.sleep(0.20 if worker_busy else 0.08)
+            except Exception:
+                time.sleep(0.20)
+
     def _set_last_frame(self, frame: Optional[Dict]):
         with self._array_lock:
             self._last_array_frame = frame
@@ -343,6 +376,16 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             return
         self._last_3d_refresh_ts = now
         QtCore.QMetaObject.invokeMethod(self, "_refresh_array_3d_on_ui", QtCore.Qt.QueuedConnection)
+
+    def _sensor_read_frame(self) -> Optional[Dict]:
+        with self._sensor_io_lock:
+            return self.array_sensor.read_frame() if self.array_sensor else None
+
+    def _sensor_read_frames(self) -> List[Dict]:
+        with self._sensor_io_lock:
+            if not self.array_sensor:
+                return []
+            return self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
 
     def _get_last_frame(self) -> Optional[Dict]:
         with self._array_lock:
@@ -548,13 +591,13 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         errs1: List[float] = []
         done = 0
 
+        if self.chk_zero_each_point.isChecked():
+            self._zero_array_sensor_for_validation(timeout_s=min(3.0, p["timeout"]))
+
         for idx, (t0_cmd, t1_cmd) in enumerate(points, start=1):
             if self._stop_event.is_set():
                 self.sig_log.emit("一键预测被用户停止")
                 break
-
-            if self.chk_zero_each_point.isChecked():
-                self._zero_array_sensor_for_validation(timeout_s=min(3.0, p["timeout"]))
 
             self._move_axis_checked(0, t0_cmd, p["timeout"])
             self._move_axis_checked(1, t1_cmd, p["timeout"])
@@ -592,6 +635,9 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             self.torque.move_rel(0, -1.0)
             self._wait_torque_done(timeout_s=p["timeout"], require_motion_start=True)
 
+            if self.chk_zero_each_point.isChecked():
+                self._zero_array_sensor_for_validation(timeout_s=min(3.0, p["timeout"]))
+
             done += 1
             self.sig_progress.emit(done, len(points))
 
@@ -625,8 +671,8 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         while time.time() - t0 < timeout_s:
             if self._stop_event.is_set():
                 raise RuntimeError("用户停止")
-            frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
-            frame = frames[-1] if frames else self.array_sensor.read_frame()
+            frames = self._sensor_read_frames()
+            frame = frames[-1] if frames else self._sensor_read_frame()
             if frame is not None:
                 self._set_last_frame(frame)
                 self._refresh_array_3d_throttled(force=False)
@@ -641,7 +687,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
             if self._stop_event.is_set():
                 raise RuntimeError("用户停止")
 
-            batch = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+            batch = self._sensor_read_frames()
             if batch:
                 need = n_frames - len(preds)
                 picked = batch[-need:]
@@ -659,7 +705,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
                     preds.append(self.model.predict(feat).astype(np.float32))
                 continue
 
-            frame = self.array_sensor.read_frame()
+            frame = self._sensor_read_frame()
             if frame is not None:
                 self._set_last_frame(frame)
                 self._refresh_array_3d_throttled(force=False)
@@ -809,8 +855,8 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         frame = self._get_last_frame()
         if frame is None and self.array_sensor and not (self._worker and self._worker.is_alive()):
             try:
-                frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
-                frame = frames[-1] if frames else self.array_sensor.read_frame()
+                frames = self._sensor_read_frames()
+                frame = frames[-1] if frames else self._sensor_read_frame()
                 if frame is not None:
                     self._set_last_frame(frame)
             except Exception:
@@ -850,6 +896,7 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         self._stop_event.set()
+        self._preview_running = False
         try:
             if self._status_timer:
                 self._status_timer.stop()
@@ -859,6 +906,12 @@ class ValidationPredictUI(QtWidgets.QMainWindow):
         try:
             if self._worker and self._worker.is_alive():
                 self._worker.join(timeout=1.5)
+        except Exception:
+            pass
+
+        try:
+            if self._preview_thread and self._preview_thread.is_alive():
+                self._preview_thread.join(timeout=1.0)
         except Exception:
             pass
 

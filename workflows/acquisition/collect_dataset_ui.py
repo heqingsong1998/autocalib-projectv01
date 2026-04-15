@@ -129,11 +129,13 @@ class CollectorUI(QtWidgets.QMainWindow):
         self._torque_force_zero_cooldown_s: float = 0.5
         self._torque_retract_step_mm: float = 1.0
         self._last_3d_refresh_ts: float = 0.0
-        self._collect_3d_refresh_interval_s: float = 0.25
+        # 3D显示限频：默认约10Hz，兼顾实时性与采集稳定性。
+        self._collect_3d_refresh_interval_s: float = 0.10
 
         self._worker: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
         self._busy_lock = threading.Lock()
+        self._sensor_io_lock = threading.Lock()
         self._preview_running = True
         self._preview_thread = threading.Thread(target=self._array_preview_loop, daemon=True)
         self._preview_thread.start()
@@ -341,24 +343,24 @@ class CollectorUI(QtWidgets.QMainWindow):
                     time.sleep(0.2)
                     continue
 
-                # 采集主流程运行时不抢占读取，避免影响数据采样。
-                if self._worker and self._worker.is_alive():
-                    time.sleep(0.1)
-                    continue
-
                 if not (self.array_3d_dialog and self.array_3d_dialog.isVisible()):
                     time.sleep(0.15)
                     continue
 
-                frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
-                frame = frames[-1] if frames else self.array_sensor.read_frame()
+                worker_busy = bool(self._worker and self._worker.is_alive())
+                if worker_busy:
+                    # 采集进行中仅低频读取单帧，减少对主采样流程的影响。
+                    frame = self._sensor_read_frame()
+                else:
+                    frames = self._sensor_read_frames()
+                    frame = frames[-1] if frames else self._sensor_read_frame()
                 if frame is None:
-                    time.sleep(0.05)
+                    time.sleep(0.08 if worker_busy else 0.05)
                     continue
 
                 self._set_last_array_frame(frame)
-                QtCore.QMetaObject.invokeMethod(self, "_refresh_array_3d_on_ui", QtCore.Qt.QueuedConnection)
-                time.sleep(0.08)
+                self._refresh_array_3d_throttled(force=False)
+                time.sleep(0.10 if worker_busy else 0.06)
             except Exception:
                 time.sleep(0.2)
 
@@ -378,6 +380,20 @@ class CollectorUI(QtWidgets.QMainWindow):
     def _get_last_array_frame(self) -> Optional[Dict]:
         with self._array_frame_lock:
             return self._last_array_frame
+
+    def _sensor_read_frame(self):
+        if not self.array_sensor:
+            return None
+        with self._sensor_io_lock:
+            return self.array_sensor.read_frame()
+
+    def _sensor_read_frames(self):
+        if not self.array_sensor:
+            return []
+        if not hasattr(self.array_sensor, "read_frames"):
+            return []
+        with self._sensor_io_lock:
+            return self.array_sensor.read_frames()
 
     def connect_all(self):
         self._run_bg(self._connect_all_impl)
@@ -411,8 +427,8 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit("阵列传感器未连接")
             return
 
-        frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
-        frame = frames[-1] if frames else self.array_sensor.read_frame()
+        frames = self._sensor_read_frames()
+        frame = frames[-1] if frames else self._sensor_read_frame()
         if frame is None:
             frame = self._get_last_array_frame()
             if frame is None:
@@ -432,8 +448,8 @@ class CollectorUI(QtWidgets.QMainWindow):
             self.sig_log.emit("阵列传感器未连接")
             return
 
-        frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
-        frame = frames[-1] if frames else self.array_sensor.read_frame()
+        frames = self._sensor_read_frames()
+        frame = frames[-1] if frames else self._sensor_read_frame()
         if frame is None:
             self.sig_log.emit("暂无阵列数据，无法显示3D")
             return
@@ -620,6 +636,8 @@ class CollectorUI(QtWidgets.QMainWindow):
         try:
             # 采集开始前先做一次力清零
             self._force_zero_torque_checked(retries=3, settle_s=0.15, ok_abs_force_n=0.5)
+            # 采集开始前先做一次阵列清零，确保首个样本的3D与相对量基线一致。
+            self._zero_array_sensor_impl()
 
             for theta0, theta1 in points:
                 if self._stop_event.is_set():
@@ -671,6 +689,9 @@ class CollectorUI(QtWidgets.QMainWindow):
                         frames=frames,
                     )
 
+                    # 力矩电机先回退 1mm，再执行清零，避免受力状态清零造成3D基线偏移。
+                    self._retract_torque_step(timeout_s=params["point_timeout"], step_mm=1.0)
+
                     # 每个样本完成后执行一次阵列传感器清零，减少零点漂移累积。
                     self._zero_array_sensor_impl()
 
@@ -680,9 +701,6 @@ class CollectorUI(QtWidgets.QMainWindow):
                     self.sig_log.emit(
                         f"✅ 完成 {done}/{total_samples}: ({theta0:+.3f},{theta1:+.3f}) 第{rep}/{params['repeat_presses']}次 -> {rec.sample_path}"
                     )
-
-                    # 力矩电机回退 1mm，准备下一次按压
-                    self._retract_torque_step(timeout_s=params["point_timeout"], step_mm=1.0)
 
                     # 采集中按总样本 1/4 间隔执行力清零（不在最后一个样本重复）
                     if done < total_samples and done % zero_interval == 0:
@@ -857,9 +875,9 @@ class CollectorUI(QtWidgets.QMainWindow):
         while len(collected) < n_frames and time.time() - t0 < timeout_s:
             if self._stop_event.is_set():
                 raise RuntimeError("用户停止")
-            frames = self.array_sensor.read_frames() if hasattr(self.array_sensor, "read_frames") else []
+            frames = self._sensor_read_frames()
             if not frames:
-                one = self.array_sensor.read_frame()
+                one = self._sensor_read_frame()
                 frames = [one] if one is not None else []
             if not frames:
                 time.sleep(0.001)

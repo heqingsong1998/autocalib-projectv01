@@ -14,7 +14,7 @@ except ImportError:
     # 兼容直接以脚本方式运行: python workflows/training/train_single_frame_mlp.py
     from single_frame_dataset import load_frame_dataset, train_val_split
 
-DEFAULT_DATASET_ROOT = "datasets\collect_20260414_095702"
+DEFAULT_DATASET_ROOT = "datasets\\collect_20260415_094400"
 
 
 @dataclass
